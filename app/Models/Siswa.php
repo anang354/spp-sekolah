@@ -26,4 +26,8 @@ class Siswa extends Model
     {
         return $this->hasMany(Tagihan::class);
     }
+    public function pembayaran(): HasMany
+    {
+        return $this->hasMany(Pembayaran::class);
+    }
 }

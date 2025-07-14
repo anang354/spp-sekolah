@@ -35,7 +35,7 @@ class CreateAction
             ])
             ->action(function (array $data){
                 $jenjang = $data['jenjang'];
-                $getSiswa = Siswa::whereHas('kelas', function (Builder $query) use ($jenjang) {
+                $getSiswa = Siswa::where('is_active', true)->whereHas('kelas', function (Builder $query) use ($jenjang) {
                     $query->where('jenjang', $jenjang);
                 })->get();
                 try {

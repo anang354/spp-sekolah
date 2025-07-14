@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -157,6 +158,18 @@ class PembayaranResource extends Resource
                 TextColumn::make('siswa.nama')->searchable(),
                 TextColumn::make('tanggal_pembayaran')
                 ->date('l, d F Y'),
+                TextColumn::make('periode_tagihan')
+                    ->label('Periode Tagihan')
+                    ->getStateUsing(function ($record) {
+                        $bulan = $record->tagihan->periode_bulan ?? null;
+                        $tahun = $record->tagihan->periode_tahun ?? null;
+
+                        if ($bulan && $tahun) {
+                            return Carbon::createFromDate(null, $bulan, 1)->translatedFormat('F') . ' ' . $tahun;
+                        }
+
+                        return '-';
+                }),
                 TextColumn::make('jumlah_dibayar')
                 ->prefix('Rp. ')
                 ->numeric(decimalPlaces: 0)

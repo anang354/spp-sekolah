@@ -19,6 +19,8 @@ use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\SiswaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SiswaResource\RelationManagers;
+use App\Filament\Resources\SiswaResource\RelationManagers\TagihansRelationManager;
+use App\Filament\Resources\SiswaResource\RelationManagers\PembayaranRelationManager;
 
 class SiswaResource extends Resource
 {
@@ -44,6 +46,7 @@ class SiswaResource extends Resource
                     ->required()
                     ->boolean(),
                 TextInput::make('nama_wali'),
+                Radio::make('is_active')->boolean(),
             ]);
     }
 
@@ -69,6 +72,10 @@ class SiswaResource extends Resource
                 IconColumn::make('is_boarding')
                     ->label('Siswa Boarding')
                     ->boolean(),
+                IconColumn::make('is_active')
+                    ->label('Status')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('jenis_kelamin')->options([
@@ -98,7 +105,8 @@ class SiswaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TagihansRelationManager::class,
+            PembayaranRelationManager::class,
         ];
     }
 
