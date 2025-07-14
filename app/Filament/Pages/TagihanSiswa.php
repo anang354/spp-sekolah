@@ -25,7 +25,7 @@ class TagihanSiswa extends Page implements HasTable
     public function table(Table $table): Table
     {
     return $table
-        ->query(Tagihan::query()->orderByDesc('created_at'))
+        ->query(Tagihan::query()->with('pembayaran')->orderByDesc('created_at'))
         ->columns([
             // Kolom Periode
             TextColumn::make('periode') // Anda bisa memberi nama kolom ini 'periode' atau apa pun
@@ -45,23 +45,31 @@ class TagihanSiswa extends Page implements HasTable
             TextColumn::make('jumlah_tagihan')
                 ->label('Jumlah Tagihan')
                 ->prefix('Rp. ')
-                ->numeric(decimalPlaces: 0),
+                ->numeric(decimalPlaces: 0)
+                ->summarize(Sum::make()),
             TextColumn::make('jumlah_diskon')
                 ->label('Diskon')
                 ->prefix('- Rp. ')
                 ->color('danger')
-                ->numeric(decimalPlaces: 0),
+                ->numeric(decimalPlaces: 0)
+                ->summarize(Sum::make()),
             TextColumn::make('jumlah_netto')
                 ->label('Tagihan setelah diskon')
                 ->prefix('Rp. ')
                 ->numeric(decimalPlaces: 0)
                 ->summarize(Sum::make()),
+            TextColumn::make('total_dibayar')
+                ->label('Total Dibayar')
+                ->getStateUsing(fn ($record) => 'Rp ' . number_format($record->total_pembayaran, 0, ',', '.')),
+            TextColumn::make('sisa_tagihan')
+                ->label('Sisa Tagihan')
+                ->getStateUsing(fn ($record) => 'Rp ' . number_format($record->sisa_tagihan, 0, ',', '.')),
             TextColumn::make('status')
             ->badge()
             ->color(fn (string $state): string => match ($state) {
                 'baru' => 'info',
                 'lunas' => 'success',
-                'sebagian' => 'warning',
+                'angsur' => 'warning',
             }),
 
         ])
@@ -76,6 +84,13 @@ class TagihanSiswa extends Page implements HasTable
                     ->relationship('siswa.kelas', 'jenjang', fn (Builder $query) => $query->orderBy('nama_kelas')) // Relasi nested
                     ->preload()
                     ->searchable(),
+                SelectFilter::make('status')
+                    ->options([
+                        'angsur' => 'angsur',
+                        'lunas' => 'lunas',
+                        'baru' => 'baru',
+                    ])
+                    ->multiple(),
 
                 // <<< FILTER BERDASARKAN PERIODE BULAN >>>
                 SelectFilter::make('periode_bulan')
