@@ -13,6 +13,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Concerns\InteractsWithTable;
+use App\Filament\Resources\TagihanResource\Widgets\TagihanBelumDibayarWidget;
 
 class TagihanSiswa extends Page implements HasTable
 {
@@ -22,10 +23,21 @@ class TagihanSiswa extends Page implements HasTable
 
     protected static string $view = 'filament.pages.tagihan';
 
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            TagihanBelumDibayarWidget::class, // Add your widget class here
+        ];
+    }
+
     public function table(Table $table): Table
     {
     return $table
         ->query(Tagihan::query()->with('pembayaran')->orderByDesc('created_at'))
+         ->groups([
+            'status',
+        ])
+        ->defaultGroup('status')
         ->columns([
             // Kolom Periode
             TextColumn::make('periode') // Anda bisa memberi nama kolom ini 'periode' atau apa pun
@@ -70,7 +82,12 @@ class TagihanSiswa extends Page implements HasTable
                 'baru' => 'info',
                 'lunas' => 'success',
                 'angsur' => 'warning',
-            }),
+            })
+            ->icons([
+                'heroicon-m-check-badge' => 'lunas',
+                'heroicon-m-arrow-path' => 'angsur',
+                'heroicon-m-clock' => 'baru',
+            ]),
 
         ])
         ->filters([

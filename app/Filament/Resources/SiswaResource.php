@@ -72,6 +72,22 @@ class SiswaResource extends Resource
                 IconColumn::make('is_boarding')
                     ->label('Siswa Boarding')
                     ->boolean(),
+                TextColumn::make('total_tagihan_belum_lunas')
+                ->label('Tagihan Belum Dibayar')
+                ->getStateUsing(function ($record) {
+                    if($record->tagihans
+                        ->where('status', '!=', 'lunas')
+                        ->sum('jumlah_netto') !== 0 ) {
+                             return $record->tagihans
+                            ->where('status', '!=', 'lunas')
+                            ->sum('jumlah_netto') - 
+                            $record->pembayaran->sum('jumlah_dibayar');
+                        } else {
+                            return 0;
+                        }
+                   
+                })
+                ->formatStateUsing(fn ($state) => 'Rp ' . number_format((float) $state, 0, ',', '.')),
                 IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
