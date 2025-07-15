@@ -33,9 +33,9 @@ class TagihansRelationManager extends RelationManager
                 ->options([
                     'baru' => 'baru',
                     'lunas' => 'lunas',
-                    'dicicil' => 'dicicil',
+                    'angsur' => 'angsur',
                 ]),
-                TextInput::make('keterangan')->required(),
+                TextInput::make('keterangan'),
             ]);
     }
 
