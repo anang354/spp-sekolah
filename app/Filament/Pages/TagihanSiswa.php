@@ -28,6 +28,8 @@ class TagihanSiswa extends Page implements HasTable
 
     protected static string $view = 'filament.pages.tagihan';
 
+    protected static ?int $navigationSort = 6;
+
     protected function getHeaderWidgets(): array
     {
         return [
