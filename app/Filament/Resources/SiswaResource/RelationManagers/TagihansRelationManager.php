@@ -97,10 +97,14 @@ class TagihansRelationManager extends RelationManager
                     ->summarize(Sum::make()),
                 TextColumn::make('total_dibayar')
                     ->label('Total Dibayar')
-                    ->getStateUsing(fn ($record) => 'Rp ' . number_format($record->total_pembayaran, 0, ',', '.')),
+                ->prefix('Rp. ')
+                ->numeric(decimalPlaces: 0)
+                    ->summarize(Sum::make()),
                 TextColumn::make('sisa_tagihan')
                     ->label('Sisa Tagihan')
-                    ->getStateUsing(fn ($record) => 'Rp ' . number_format($record->sisa_tagihan, 0, ',', '.')),
+                ->prefix('Rp. ')
+                ->numeric(decimalPlaces: 0)
+                    ->summarize(Sum::make()),
                 TextColumn::make('status')
                 ->badge()
                 ->color(fn (string $state): string => match ($state) {
@@ -109,6 +113,15 @@ class TagihansRelationManager extends RelationManager
                     'angsur' => 'warning',
                 }),
             ])
+            ->modifyQueryUsing(function (Builder $query): Builder {
+                return $query->with('pembayaran')
+                    ->selectRaw('
+                    tagihans.*, 
+                    (SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.tagihan_id = tagihans.id) as total_dibayar,
+                    (jumlah_netto - (SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.tagihan_id = tagihans.id)) as sisa_tagihan
+                ')
+                    ->orderByDesc('created_at');
+            })
             ->filters([
                 //
             ])

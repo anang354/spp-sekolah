@@ -153,6 +153,8 @@ class PembayaranResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->paginated([10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(25)
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('siswa.nama')->searchable(),

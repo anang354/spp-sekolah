@@ -38,6 +38,8 @@ class TagihanSiswa extends Page implements HasTable
     public function table(Table $table): Table
     {
     return $table
+        ->paginated([10, 25, 50, 100, 'all'])
+        ->defaultPaginationPageOption(25)
         ->query(
             Tagihan::query()
             ->with('pembayaran')
@@ -149,6 +151,7 @@ class TagihanSiswa extends Page implements HasTable
         ->actions([
             //
             \Filament\Tables\Actions\EditAction::make()
+            ->visible(fn($record) => $record->status !== 'lunas')
             ->form([
                 Grid::make([
                     'default' => 1,

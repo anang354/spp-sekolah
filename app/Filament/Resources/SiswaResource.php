@@ -53,6 +53,8 @@ class SiswaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->paginated([10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(25)
             ->columns([
                 TextColumn::make('nisn')->searchable(),
                 TextColumn::make('nama')->searchable(),
@@ -79,7 +81,6 @@ class SiswaResource extends Resource
                         ->where('status', '!=', 'lunas')
                         ->sum('jumlah_netto') !== 0 ) {
                              return $record->tagihans
-                            ->where('status', '!=', 'lunas')
                             ->sum('jumlah_netto') - 
                             $record->pembayaran->sum('jumlah_dibayar');
                         } else {
