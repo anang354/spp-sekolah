@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TagihanResource\Widgets;
 
+use Carbon\Carbon;
 use App\Models\Siswa;
 use App\Models\Tagihan;
 use App\Models\Pembayaran;
@@ -12,19 +13,35 @@ class TagihanBelumDibayarWidget extends BaseWidget
 {
     protected function getStats(): array
     {
-        $getTagihan  = Tagihan::sum('jumlah_netto');
-        $getPembayaran = Pembayaran::sum('jumlah_dibayar');
-        $getData = $getTagihan - $getPembayaran;
-        $formatView = "Rp " . number_format($getData, 0, ",", ".");
+        $now = Carbon::now();
+        $bulan = $now->month;
+        $tahun = $now->year;
+        $tagihan  = Tagihan::query()
+            ->where(function ($query) use ($bulan, $tahun) {
+                $query->where('periode_tahun', '<', $tahun)
+                      ->orWhere(function ($q) use ($bulan, $tahun) {
+                          $q->where('periode_tahun', $tahun)
+                            ->where('periode_bulan', '<=', $bulan);
+                      });
+            })
+            ->with('pembayaran')
+            ->get();
+        $totalTagihan = $tagihan->sum('jumlah_netto');
+        $totalDibayar = $tagihan->flatMap->pembayaran->sum('jumlah_dibayar');
+        $sisa = $totalTagihan - $totalDibayar;
+
+        // $getTagihan  = Tagihan::sum('jumlah_netto');
+        // $getPembayaran = Pembayaran::sum('jumlah_dibayar');
+        // $getData = $getTagihan - $getPembayaran;
+        // $formatView = "Rp " . number_format($getData, 0, ",", ".");
         $getDataSiswa  =  Siswa::whereHas('tagihans', function ($query) {
                             $query->where('status', '!=', 'lunas');
                         })->count();
         return [
             //
-            Stat::make('Tagihan Belum Dibayar', $formatView)
-            ->color('danger'),
-            Stat::make('Siswa Belum Bayar', $getDataSiswa)
-            ->color('danger'),
+            Stat::make("Total Tagihan s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($totalTagihan, 0, ',', '.')),
+            Stat::make("Total Dibayar s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($totalDibayar, 0, ',', '.'))->color('success'),
+            Stat::make("Sisa Tagihan s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($sisa, 0, ',', '.'))->color('danger'),
         ];
     }
 }

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('jumlah_tagihan');
             $table->integer('jumlah_diskon');
             $table->string('daftar_biaya');
-            $table->string('daftar_diskon');
+            $table->string('daftar_diskon')->nullable();
             $table->integer('jumlah_netto');
             $table->string('status')->default('baru');
             $table->string('keterangan')->nullable();

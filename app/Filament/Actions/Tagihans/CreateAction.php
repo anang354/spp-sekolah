@@ -20,7 +20,7 @@ class CreateAction
 {
     public static function make(): Action 
     {
-        return Action::make('create')->label('Buat Tagihan')->icon('heroicon-o-plus')
+        return Action::make('create')->label('Buat Tagihan Massal')->icon('heroicon-o-plus')
             ->form([
                 Placeholder::make('')->content('Tagihan akan dibuat otomatis untuk seluruh siswa berdasarkan biaya dan diskon yang telah ditentukan'),
                 Radio::make('jenjang')->options([
@@ -62,7 +62,7 @@ class CreateAction
                             // Menjumlahkan total biaya
                             $totalBiaya += $item->nominal;
                             // Menyimpan id ke dalam array string
-                            $idsBiaya[] = (string) $item->id; // Menggunakan (string) untuk memastikan tipe string
+                            $idsBiaya[] = (string) $item->nama_biaya; // Menggunakan (string) untuk memastikan tipe string
                         }
                         $saveIdsBiaya = implode(', ', $idsBiaya);
                         $totalDiskon = 0;
@@ -77,7 +77,7 @@ class CreateAction
                                     $diskonIs = $totalBiaya * ($diskon->persentase / 100);
                                     $totalDiskon += intval($diskonIs);
                                 }
-                                $idsDiskon[] = (string) $diskon->id;
+                                $idsDiskon[] = (string) $diskon->nama_diskon;
                             }
                         }
                         $saveIdsDiskon = implode(', ', $idsDiskon);

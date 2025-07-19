@@ -25,10 +25,32 @@ class TagihansRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                DatePicker::make('jatuh_tempo')->label('Tanggal Jatuh Tempo')->required(),
-                TextInput::make('jumlah_tagihan')->numeric()->required(),
-                TextInput::make('jumlah_diskon')->numeric()->required(),
-                TextInput::make('jumlah_netto')->numeric()->required(),
+                Select::make('periode_bulan')
+                ->options(Tagihan::BULAN),
+                Select::make('periode_tahun')
+                ->options(Tagihan::TAHUN),
+                DatePicker::make('jatuh_tempo')->label('Tanggal Jatuh Tempo')->required()->columnSpan('full'),
+                TextInput::make('jumlah_tagihan')->numeric()->required()
+                ->live(debounce: 500)
+                ->afterStateUpdated(function (callable $set, callable $get) {
+                    $tagihan = (int) $get('jumlah_tagihan');
+                    $diskon = (int) $get('jumlah_diskon');
+                    $set('jumlah_netto', max($tagihan - $diskon, 0));
+                }),
+                TextInput::make('jumlah_diskon')->numeric()->required()
+                ->live(debounce: 500)
+                ->afterStateUpdated(function (callable $set, callable $get) {
+                    $tagihan = (int) $get('jumlah_tagihan');
+                    $diskon = (int) $get('jumlah_diskon');
+                    $set('jumlah_netto', max($tagihan - $diskon, 0));
+                }),
+                TextInput::make('jumlah_netto')->numeric()->required()->columnSpan('full')
+                ->disabled()
+                ->dehydrated() // agar tetap disimpan walau disabled
+                ->hint(fn ($get) => 'Terbilang : ' . \App\Helpers\Terbilang::make((int) $get('jumlah_netto')))
+                ->hintColor('gray'),
+                TextInput::make('daftar_biaya'),
+                TextInput::make('daftar_diskon'),
                 Select::make('status')->required()
                 ->options([
                     'baru' => 'baru',
@@ -56,11 +78,13 @@ class TagihansRelationManager extends RelationManager
                 }),
                 TextColumn::make('jatuh_tempo')->date('d F Y'),
                 TextColumn::make('jumlah_tagihan')
+                    ->description(fn (\App\Models\Tagihan $record): string => $record->daftar_biaya)
                     ->label('Jumlah Tagihan')
                     ->prefix('Rp. ')
                     ->numeric(decimalPlaces: 0)
                     ->summarize(Sum::make()),
                 TextColumn::make('jumlah_diskon')
+                ->description(fn (\App\Models\Tagihan $record): string => $record->daftar_diskon)
                     ->label('Diskon')
                     ->prefix('- Rp. ')
                     ->color('danger')
@@ -89,7 +113,7 @@ class TagihansRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                //Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
