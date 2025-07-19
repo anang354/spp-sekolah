@@ -6,13 +6,15 @@ namespace App\Filament\Actions\Tagihans;
 use App\Models\Biaya;
 use App\Models\Siswa;
 use App\Models\Tagihan;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
-use Filament\Notifications\Notification;
 
 class CreateAction 
 {
@@ -24,7 +26,14 @@ class CreateAction
                 Radio::make('jenjang')->options([
                     'smp' => 'SMP',
                     'sma' => 'SMA',
-                ])->required(),
+                ])->required()
+                ->live()
+                ->afterStateUpdated(fn (Set $set) => $set('kelas', null)),
+                Select::make('kelas')->options(function (Get $get): array {
+                    $jenjang = $get('jenjang');
+                       return \App\Models\Kelas::where('jenjang', $jenjang)->pluck('nama_kelas', 'id')->toArray();
+                })->required()
+                ->multiple(),
                 Select::make('periode_bulan')->options([
                     Tagihan::BULAN
                 ])->required(),
@@ -35,8 +44,10 @@ class CreateAction
             ])
             ->action(function (array $data){
                 $jenjang = $data['jenjang'];
-                $getSiswa = Siswa::where('is_active', true)->whereHas('kelas', function (Builder $query) use ($jenjang) {
-                    $query->where('jenjang', $jenjang);
+                $kelasIds = $data['kelas'];
+                $getSiswa = Siswa::where('is_active', true)
+                ->whereHas('kelas', function (Builder $query) use ($jenjang, $kelasIds) {
+                    $query->where('jenjang', $jenjang)->whereIn('id', $kelasIds);
                 })->get();
                 try {
                     $hitung = 0;

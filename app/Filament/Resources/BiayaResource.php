@@ -37,8 +37,8 @@ class BiayaResource extends Resource
                 ]),
                 Select::make('jenjang')->required()
                 ->options([
-                    'smp' => 'SMA',
-                    'sma' => 'SMP',
+                    'smp' => 'SMP',
+                    'sma' => 'SMA',
                 ]),
                 TextInput::make('keterangan'),
                 Section::make('Nominal Biaya')->schema([

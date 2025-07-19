@@ -110,6 +110,11 @@ class SiswaResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->modalHeading('Hapus Data Siswa') // Judul modal konfirmasi
+                    ->modalDescription('Apakah Anda yakin ingin menghapus data siswa ini? Tindakan ini tidak dapat dibatalkan. Semua data terkait seperti Tagihan dan Pembayaran juga akan dihapus.') // Pesan konfirmasi kustom
+                    ->modalSubmitActionLabel('Ya, Hapus Siswa') // Label tombol konfirmasi
+                    ->modalCancelActionLabel('Batal Hapus'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
