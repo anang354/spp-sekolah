@@ -70,9 +70,9 @@ class TagihanSiswa extends Page implements HasTable
                     return $date->translatedFormat('F Y');
                 }),
             TextColumn::make('siswa.nama')->searchable(),
-            TextColumn::make('siswa.kelas.nama_kelas'),
-            TextColumn::make('siswa.kelas.jenjang')->label('Jenjang'),
-            TextColumn::make('jatuh_tempo')->date('d F Y'),
+            TextColumn::make('siswa.kelas.nama_kelas')->toggleable(),
+            TextColumn::make('siswa.kelas.jenjang')->label('Jenjang')->toggleable(),
+            TextColumn::make('jatuh_tempo')->date('d F Y')->toggleable(),
             TextColumn::make('jumlah_tagihan')
                 ->label('Jumlah Tagihan')
                 ->prefix('Rp. ')

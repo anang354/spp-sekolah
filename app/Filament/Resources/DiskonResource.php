@@ -26,6 +26,8 @@ class DiskonResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
+    protected static ?string $navigationGroup = 'Diskon';
+
     public static function form(Form $form): Form
     {
         return $form

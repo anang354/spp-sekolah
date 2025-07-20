@@ -31,6 +31,8 @@ class DiskonSiswa extends Page implements  HasForms, HasTable
 
     protected static string $view = 'filament.pages.diskon-siswa';
 
+    protected static ?string $navigationGroup = 'Diskon';
+
     protected static ?int $navigationSort = 5;
 
     protected function getTableQuery()

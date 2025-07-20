@@ -26,6 +26,7 @@ class Tagihan extends Model
         '12' => 'Desember',
     ];
     const TAHUN = [
+        '2024' => '2024',
         '2025' => '2025',
         '2026' => '2026',
         '2027' => '2027',
