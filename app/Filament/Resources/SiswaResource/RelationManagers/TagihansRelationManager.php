@@ -8,9 +8,11 @@ use Filament\Tables;
 use App\Models\Tagihan;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -78,13 +80,13 @@ class TagihansRelationManager extends RelationManager
                 }),
                 TextColumn::make('jatuh_tempo')->date('d F Y'),
                 TextColumn::make('jumlah_tagihan')
-                    ->description(fn (\App\Models\Tagihan $record): string => $record->daftar_biaya)
+                    ->description(fn (\App\Models\Tagihan $record) => $record->daftar_biaya)
                     ->label('Jumlah Tagihan')
                     ->prefix('Rp. ')
                     ->numeric(decimalPlaces: 0)
                     ->summarize(Sum::make()),
                 TextColumn::make('jumlah_diskon')
-                ->description(fn (\App\Models\Tagihan $record): string => $record->daftar_diskon)
+                    ->description(fn (\App\Models\Tagihan $record) => $record->daftar_diskon)
                     ->label('Diskon')
                     ->prefix('- Rp. ')
                     ->color('danger')
@@ -126,7 +128,12 @@ class TagihansRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                \App\Filament\Actions\Tagihans\CreateIndividualAction::make(),
+                // Tables\Actions\CreateAction::make()
+                // ->form($this->form)
+                // ->action(function (array $data){
+                //     dd($data);
+                // }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
