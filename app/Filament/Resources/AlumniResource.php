@@ -12,8 +12,11 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\Summarizers\Sum;
 use App\Filament\Resources\AlumniResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AlumniResource\RelationManagers;
@@ -99,6 +102,7 @@ class AlumniResource extends Resource
                 ->numeric(decimalPlaces: 0),
                 TextColumn::make('jumlah_netto')
                 ->sortable()
+                ->summarize(Sum::make())
                 ->numeric(decimalPlaces: 0),
                 TextColumn::make('status')
             ->badge()
@@ -114,12 +118,33 @@ class AlumniResource extends Resource
             ]),
             ])
             ->filters([
-                //
+                SelectFilter::make('jenjang')
+                    ->options([
+                        'smp' => 'SMP',
+                        'sma' => 'SMA',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                 ->visible(fn ($record) => $record->status === 'lunas'),
+                Tables\Actions\Action::make('download-pdf')
+                    ->color('success')
+                    ->label('Download Pdf')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(function($record) {
+                        $relativePath = $record->file;
+                        // Periksa apakah file benar-benar ada di storage sebelum membuat URL
+                        if (Storage::disk('public')->exists($relativePath)) {
+                            return Storage::disk('public')->url($relativePath);
+                        }
+                        return null; // Jika file tidak ada, tombol tidak akan berfungsi atau bisa disembunyikan
+                    })
+                    ->openUrlInNewTab() // Membuka link di tab baru (biasanya akan memicu download untuk PDF)
+                    // Opsional: Sembunyikan tombol jika file path kosong atau file tidak ditemukan
+                    ->hidden(fn ($record): bool => empty($record->file) || !Storage::disk('public')->exists($record->file)),
+                // <<< AKHIR TAMBAHAN AKSI >>>
+                    
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

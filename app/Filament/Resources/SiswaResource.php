@@ -193,6 +193,14 @@ class SiswaResource extends Resource
                     ->modalDescription('Apakah Anda yakin ingin menghapus data siswa ini? Tindakan ini tidak dapat dibatalkan. Semua data terkait seperti Tagihan dan Pembayaran juga akan dihapus.') // Pesan konfirmasi kustom
                     ->modalSubmitActionLabel('Ya, Hapus Siswa') // Label tombol konfirmasi
                     ->modalCancelActionLabel('Batal Hapus'),
+                Tables\Actions\Action::make('lihat-pdf')
+                    ->color('success')
+                    ->label('Kartu SPP')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(function($record) {
+                        return url('/admin/kartu-spp/'.$record->id);
+                    })
+                    ->openUrlInNewTab()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
