@@ -17,10 +17,10 @@ class ListAlumnis extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
-    protected function getHeaderWidgets(): array
+     protected function getHeaderWidgets(): array
     {
         return [
-            TagihanAlumniWidget::class,
+            TagihanAlumniWidget::class
         ];
     }
 }

@@ -39,9 +39,15 @@ class TagihanBelumDibayarWidget extends BaseWidget
                         })->count();
         return [
             //
-            Stat::make("Total Tagihan s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($totalTagihan, 0, ',', '.')),
-            Stat::make("Total Dibayar s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($totalDibayar, 0, ',', '.'))->color('success'),
-            Stat::make("Sisa Tagihan s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($sisa, 0, ',', '.'))->color('danger'),
+            Stat::make("Total Tagihan s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($totalTagihan, 0, ',', '.'))
+            ->description('Total jumlah tagihan semua siswa')
+            ->color('info'),
+            Stat::make("Total Dibayar s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($totalDibayar, 0, ',', '.'))
+            ->description('Total pembayaran yang masuk')
+                ->color('success'),
+            Stat::make("Sisa Tagihan s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($sisa, 0, ',', '.'))
+            ->description('Tagihan yang belum dibayar')
+                ->color('danger'),
         ];
     }
 }

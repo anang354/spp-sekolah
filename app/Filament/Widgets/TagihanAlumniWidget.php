@@ -8,6 +8,8 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class TagihanAlumniWidget extends BaseWidget
 {
+    //Disable Widget dari tampilan dashboard (Hanya tampil ketika dipanggil saja)
+     protected static bool $isDiscovered = false;
     protected function getStats(): array
     {
         // Ambil data dari DB
@@ -21,8 +23,7 @@ class TagihanAlumniWidget extends BaseWidget
         return [
             Stat::make('Total Tagihan', 'Rp ' . number_format($totalTagihan, 0, ',', '.'))
                 ->description('Total jumlah tagihan semua alumni')
-                ->color('gray'),
-
+                ->color('info'),
             Stat::make('Total Dibayar', 'Rp ' . number_format($totalDibayar, 0, ',', '.'))
                 ->description('Total pembayaran yang masuk')
                 ->color('success'),

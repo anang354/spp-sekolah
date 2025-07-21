@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\AlumniResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AlumniResource\RelationManagers;
+use App\Filament\Resources\AlumniResource\Widgets\TagihanAlumni;
 
 class AlumniResource extends Resource
 {
