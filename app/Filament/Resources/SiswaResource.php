@@ -103,27 +103,6 @@ class SiswaResource extends Resource
         ) AS total_tagihan_belum_lunas
     ", [$periodeAngka, $periodeAngka]);
         return $table
-            // ->query(
-            //     \App\Models\Siswa::query()
-            //         ->select('siswas.*')
-            //         ->selectSub(function ($query) {
-            //             $query->from('tagihans')
-            //                 ->selectRaw('COALESCE(SUM(jumlah_netto), 0)')
-            //                 ->whereColumn('tagihans.siswa_id', 'siswas.id');
-            //         }, 'total_tagihan')
-
-            //         ->selectSub(function ($query) {
-            //             $query->from('pembayarans')
-            //                 ->selectRaw('COALESCE(SUM(jumlah_dibayar), 0)')
-            //                 ->whereColumn('pembayarans.siswa_id', 'siswas.id');
-            //         }, 'total_dibayar')
-
-            //         ->selectRaw('( 
-            //             (SELECT COALESCE(SUM(jumlah_netto), 0) FROM tagihans WHERE tagihans.siswa_id = siswas.id) 
-            //             - 
-            //             (SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.siswa_id = siswas.id)
-            //         ) AS total_tagihan_belum_lunas')
-            // )
             ->query(
             $querySiswa
             )

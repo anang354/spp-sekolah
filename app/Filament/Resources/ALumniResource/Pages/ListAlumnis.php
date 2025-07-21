@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\AlumniResource\Pages;
 
-use App\Filament\Resources\AlumniResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\AlumniResource;
+use App\Filament\Widgets\TagihanAlumniWidget;
 
 class ListAlumnis extends ListRecords
 {
@@ -14,6 +15,12 @@ class ListAlumnis extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+        ];
+    }
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            TagihanAlumniWidget::class,
         ];
     }
 }

@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('pembayaran_alumnis', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('alumni_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->date('tanggal_pembayaran');
+            $table->integer('jumlah_dibayar'); 
+            $table->enum('metode_pembayaran', ['tunai', 'transfer']);
+            $table->string('keterangan')->nullable();
+            $table->string('bukti_bayar')->nullable(); 
             $table->timestamps();
         });
     }

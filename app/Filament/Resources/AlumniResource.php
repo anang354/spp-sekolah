@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Columns\Summarizers\Sum;
 use App\Filament\Resources\AlumniResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AlumniResource\RelationManagers;
@@ -27,7 +26,7 @@ class AlumniResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?int $navigationSort = 99;
+    protected static ?string $navigationGroup = 'Alumni';
 
     public static function form(Form $form): Form
     {
@@ -90,6 +89,10 @@ class AlumniResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->query(
+            Alumni::query()
+                ->withSum('pembayaranAlumni as total_pembayaran', 'jumlah_dibayar')
+        )
             ->columns([
                 TextColumn::make('nama')->searchable(),
                 TextColumn::make('tahun_lulus')->sortable()->toggleable(),
@@ -102,8 +105,15 @@ class AlumniResource extends Resource
                 ->numeric(decimalPlaces: 0),
                 TextColumn::make('jumlah_netto')
                 ->sortable()
-                ->summarize(Sum::make())
                 ->numeric(decimalPlaces: 0),
+                TextColumn::make('total_pembayaran')
+                ->sortable()
+                ->numeric(decimalPlaces: 0),
+                TextColumn::make('sisa_tagihan')
+                ->label('Sisa Tagihan')
+                ->getStateUsing(fn ($record) => $record->jumlah_netto - ($record->total_pembayaran ?? 0))
+                ->numeric(decimalPlaces: 0)
+                ->prefix('Rp '),
                 TextColumn::make('status')
             ->badge()
             ->color(fn (string $state): string => match ($state) {
