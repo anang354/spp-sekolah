@@ -34,7 +34,7 @@ class UserResource extends Resource
                 ->unique(ignoreRecord: true)
                 ->maxLength(255),
                 TextInput::make('password')->password()->required(),
-                Select::make('role')->options(USER::USER_ROLES),
+                Select::make('role')->options(User::USER_ROLES),
             ]);
     }
 

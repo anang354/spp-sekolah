@@ -183,8 +183,10 @@ class SiswaResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    GenerateAlumniBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => auth()->user()->level === 'admin'),
+                    GenerateAlumniBulkAction::make()
+                    ->visible(fn() => auth()->user()->level === 'admin'),
                 ]),
             ]);
     }

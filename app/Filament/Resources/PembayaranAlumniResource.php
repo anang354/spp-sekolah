@@ -165,7 +165,8 @@ class PembayaranAlumniResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()->level === 'admin'),
                 ]),
             ]);
     }

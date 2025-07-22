@@ -15,7 +15,7 @@ class User extends Authenticatable
 
     const ROLE_ADMIN    = "admin";
     const ROLE_EDITOR   = "editor";
-    const ROLE_VIEW     = "view";
+    const ROLE_VIEW     = "viewer";
 
     const USER_ROLES = [
         self::ROLE_ADMIN    => 'Admin',
@@ -51,6 +51,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**

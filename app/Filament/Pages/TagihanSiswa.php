@@ -13,6 +13,7 @@ use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
@@ -148,12 +149,16 @@ class TagihanSiswa extends Page implements HasTable
                 // <<< AKHIR FILTER TAHUN >>>
             ])
         ->headerActions([
-            \App\Filament\Actions\Tagihans\CreateAction::make(),
+            \App\Filament\Actions\Tagihans\CreateAction::make()
+                ->visible(fn()=> auth()->user()->level === 'admin' || auth()->user()->level === 'editor'),
         ])
         ->actions([
             //
             \Filament\Tables\Actions\EditAction::make()
-            ->visible(fn($record) => $record->status !== 'lunas')
+            ->visible(fn($record) => 
+            $record->status !== 'lunas' &&
+            auth()->user()->level === 'admin' || auth()->user()->level === 'editor'
+            )
             ->form([
                 Grid::make([
                     'default' => 1,
@@ -206,6 +211,7 @@ class TagihanSiswa extends Page implements HasTable
                 ->dehydrated() // agar tetap disimpan walau disabled
                 ->hint(fn ($get) => 'Terbilang : ' . \App\Helpers\Terbilang::make((int) $get('jumlah_netto')))
                 ->hintColor('gray'),
+                DatePicker::make('jatuh_tempo')->required(),
                 Select::make('status')
                 ->options([
                     'baru' => 'baru',
@@ -216,7 +222,8 @@ class TagihanSiswa extends Page implements HasTable
         ])
         ->bulkActions([
             \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\DeleteBulkAction::make()
+                    ->visible(fn()=> auth()->user()->level === 'admin'),
                 ]),
         ]);
     }
