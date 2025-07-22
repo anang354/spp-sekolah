@@ -45,9 +45,9 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make('')
                     ->label('Buat Pembayaran')
-                    ->icon('heroicon-o-camera')
+                    ->icon('heroicon-o-currency-dollar')
                     ->url('/admin/pembayarans/create')
-                    ->visible(fn ():bool => auth()->user()->level === 'admin' || auth()->user()->level === 'editor'),
+                    ->visible(fn ():bool => auth()->user()->role === 'admin' || auth()->user()->role === 'editor'),
             ])
             ->middleware([
                 EncryptCookies::class,

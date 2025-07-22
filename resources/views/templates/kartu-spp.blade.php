@@ -175,16 +175,17 @@
                 $totalPembayaran = 0;
             @endphp
             @foreach($siswa['pembayaran'] as $pembayaran)
+            @php
+                $totalPembayaran += $pembayaran['jumlah_dibayar'];
+                $itemTagihan = \App\Models\Tagihan::where('id', $pembayaran['tagihan_id'])->select('periode_bulan', 'periode_tahun')->first();
+            @endphp
             <tr>
                 <td>{{ $pembayaran['tanggal_pembayaran'] }}</td>
-                <td>Januari 2025</td>
+                <td>{{ \App\Models\Tagihan::BULAN[$itemTagihan->periode_bulan].' '.$itemTagihan->periode_tahun }}</td>
                 <td>{{ number_format($pembayaran['jumlah_dibayar'], 0, '', '.') }}</td>
                 <td>{{ $pembayaran['metode_pembayaran'] }}</td>
                 <td>{{ \App\Models\User::find($pembayaran['user_id'])->value('name') }}</td>
             </tr>
-            @php
-                $totalPembayaran += $pembayaran['jumlah_dibayar'];
-            @endphp
             @endforeach
             <tr class="summarize">
                 <td colspan="2">Total</td>

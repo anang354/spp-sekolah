@@ -30,6 +30,8 @@ class AlamatSambung extends Page implements HasForms, HasTable
 
     protected static string $view = 'filament.pages.alamat-sambung';
 
+    protected static ?int $navigationSort = 30;
+
     public function mount(): void
     {
         $this->form->fill(); // Opsional
