@@ -122,9 +122,22 @@ class TagihanSiswa extends Page implements HasTable
                     ->searchable(),
                 SelectFilter::make('jenjang')
                     ->label('Filter Berdasarkan Jenjang')
-                    ->relationship('siswa.kelas', 'jenjang', fn (Builder $query) => $query->orderBy('nama_kelas')) // Relasi nested
-                    ->preload()
-                    ->searchable(),
+                    ->options(
+                        \App\Models\Kelas::query()
+                            ->distinct()
+                            ->orderBy('jenjang')
+                            ->pluck('jenjang', 'jenjang')
+                    )
+                    ->searchable()
+                    ->query(function (Builder $query, array $data): Builder {
+                        if ($data['value']) {
+                            return $query->whereHas('siswa.kelas', function ($q) use ($data) {
+                                $q->where('jenjang', $data['value']);
+                            });
+                        }
+
+                        return $query;
+                    }),
                 SelectFilter::make('status')
                     ->options([
                         'angsur' => 'angsur',

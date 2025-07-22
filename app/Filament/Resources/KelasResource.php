@@ -63,10 +63,15 @@ class KelasResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->query(
+                Kelas::query()
+                    ->withCount('siswas')
+            )
             ->columns([
                 TextColumn::make('id')->color('danger')->label('kelas_id'),
                 TextColumn::make('nama_kelas'),
                 TextColumn::make('level'),
+                TextColumn::make('siswas_count')->label('Jumlah Siswa'),
                 TextColumn::make('jenjang')->badge()
                 ->color(fn (string $state): string => match ($state) {
                     'smp' => 'info',
