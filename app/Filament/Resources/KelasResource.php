@@ -64,6 +64,7 @@ class KelasResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')->color('danger')->label('kelas_id'),
                 TextColumn::make('nama_kelas'),
                 TextColumn::make('level'),
                 TextColumn::make('jenjang')->badge()

@@ -224,7 +224,7 @@ class TagihanSiswa extends Page implements HasTable
         ->bulkActions([
             \Filament\Tables\Actions\BulkActionGroup::make([
                     \Filament\Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn()=> auth()->user()->level === 'admin'),
+                    ->visible(fn()=> auth()->user()->role === 'admin'),
                 ]),
         ]);
     }

@@ -157,10 +157,15 @@ class AlumniResource extends Resource
                 // <<< AKHIR TAMBAHAN AKSI >>>
                     
             ])
+            ->headerActions([
+                \Filament\Tables\Actions\ImportAction::make()
+                    ->importer(\App\Filament\Imports\AlumniImporter::class)
+                    ->color('success')
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn()=> auth()->user()->level === 'admin'),
+                        ->visible(fn()=> auth()->user()->role === 'admin'),
                 ]),
             ]);
     }
