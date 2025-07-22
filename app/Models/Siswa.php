@@ -30,4 +30,8 @@ class Siswa extends Model
     {
         return $this->hasMany(Pembayaran::class);
     }
+    public function alamatSambung(): BelongsTo
+    {
+        return $this->belongsTo(AlamatSambung::class);
+    }
 }

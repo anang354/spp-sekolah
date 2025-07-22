@@ -38,6 +38,16 @@ class SiswaResource extends Resource
             ->schema([
                 TextInput::make('nisn')->numeric(),
                 Select::make('kelas_id')->required()->options(\App\Models\Kelas::all()->pluck('nama_kelas', 'id')),
+                Select::make('alamat_sambung_id')
+                ->required()
+                ->searchable()
+                ->preload()
+                ->options(
+                \App\Models\AlamatSambung::all()
+                    ->mapWithKeys(fn ($a) => [
+                        $a->id => "{$a->kelompok} / {$a->desa} / {$a->daerah}"
+                    ])
+                    ),
                 TextInput::make('nama')->required(),
                 Radio::make('jenis_kelamin')->required()
                 ->options([
@@ -122,6 +132,7 @@ class SiswaResource extends Resource
                     'sma' => 'primary',
                 })
                 ->formatStateUsing(fn ($state) => strtoupper($state)),
+                TextColumn::make('alamatSambung.kelompok')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('nama_wali')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('nomor_hp')->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_boarding')

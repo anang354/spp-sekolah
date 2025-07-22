@@ -21,5 +21,10 @@ class DatabaseSeeder extends Seeder
             'password' => '1122',
             'role' => 'admin',
         ]);
+        \App\Models\AlamatSambung::create([
+            'kelompok' => 'LAINNYA',
+            'desa' => 'LAINNYA',
+            'daerah' => 'LAINNYA',
+        ]);
     }
 }

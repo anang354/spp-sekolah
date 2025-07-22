@@ -150,15 +150,16 @@ class TagihanSiswa extends Page implements HasTable
             ])
         ->headerActions([
             \App\Filament\Actions\Tagihans\CreateAction::make()
-                ->visible(fn()=> auth()->user()->level === 'admin' || auth()->user()->level === 'editor'),
+                ->visible(function () {
+                    return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
+                }),
         ])
         ->actions([
             //
             \Filament\Tables\Actions\EditAction::make()
-            ->visible(fn($record) => 
-            $record->status !== 'lunas' &&
-            auth()->user()->level === 'admin' || auth()->user()->level === 'editor'
-            )
+            ->visible(function ($record) {
+                    return $record->status !== 'lunas' && in_array(auth()->user()->role, ['admin', 'editor']);
+                })
             ->form([
                 Grid::make([
                     'default' => 1,
