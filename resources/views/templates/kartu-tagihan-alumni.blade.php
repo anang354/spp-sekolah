@@ -13,7 +13,7 @@
         }
         body {
             box-sizing: border-box;
-            font-family: "Open Sans", Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;            
+            font-family: "Open Sans", Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
         }
         .kop-surat {
             width: 100%;
@@ -103,7 +103,11 @@
     <div class="kop-surat">
         <img src="{{ $logo }}" alt="" width="90px"/>
        <div class="header">
-         <h1>SMAS BUDI LUHUR BOARDING SCHOOL</h1>
+           @if($siswa['kelas']['jenjang'] === 'sma')
+                <h1>SMAS BUDI LUHUR BOARDING SCHOOL</h1>
+           @else
+                <h1>SMPS BUDI LUHUR BOARDING SCHOOL</h1>
+           @endif
         <p>Komplek Patam Asri Blok T No.01 Kel. Patam Lestari,Kec. Sekupang, Kota Batam</p>
         <p>Telp. 0778-354-0541 www.blbs-batam.sch.id</p>
        </div>

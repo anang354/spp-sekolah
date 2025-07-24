@@ -134,6 +134,14 @@ class AlumniResource extends Resource
                         'smp' => 'SMP',
                         'sma' => 'SMA',
                     ]),
+                SelectFilter::make('tahun_lulus')
+                ->options(function () {
+                    return Alumni::select('tahun_lulus')
+                        ->distinct()
+                        ->orderBy('tahun_lulus', 'desc')
+                        ->pluck('tahun_lulus', 'tahun_lulus')
+                        ->toArray();
+                })->multiple()
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -155,7 +163,7 @@ class AlumniResource extends Resource
                     // Opsional: Sembunyikan tombol jika file path kosong atau file tidak ditemukan
                     ->hidden(fn ($record): bool => empty($record->file) || !Storage::disk('public')->exists($record->file)),
                 // <<< AKHIR TAMBAHAN AKSI >>>
-                    
+
             ])
             ->headerActions([
                 \Filament\Tables\Actions\ImportAction::make()

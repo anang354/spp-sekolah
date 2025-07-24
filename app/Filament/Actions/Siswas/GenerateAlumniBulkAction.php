@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
 
-class GenerateAlumniBulkAction 
+class GenerateAlumniBulkAction
 {
-    
+
     public static function make() : BulkAction
     {
         return BulkAction::make('generate_alumni')
@@ -18,7 +18,7 @@ class GenerateAlumniBulkAction
             ->color('primary')
             ->label('Pindahkan ke Alumni')
             ->action(function (Collection $records) {
-                
+
                 $folderPath = 'data-alumni';
                 if (!Storage::disk('public')->exists($folderPath)) {
                     Storage::disk('public')->makeDirectory($folderPath, 0775, true, true);
@@ -54,7 +54,7 @@ class GenerateAlumniBulkAction
                 'file' => $filePath,
                 'keterangan' => 'Dipindahkan dari siswa aktif',
             ]);
-            $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran'])->first()->toArray();
+            $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas'])->first()->toArray();
             $path = public_path().'/images/logo-sekolah.jpg';
             $type = pathinfo($path, PATHINFO_EXTENSION);
             $data = file_get_contents($path);
