@@ -23,7 +23,8 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
-    protected static ?int $navigationSort = 999;
+    protected static ?string $navigationGroup = 'Pengaturan';
+    protected static ?int $navigationSort = 99;
 
     public static function form(Form $form): Form
     {
@@ -33,7 +34,8 @@ class UserResource extends Resource
                 TextInput::make('email')->email()->required()
                 ->unique(ignoreRecord: true)
                 ->maxLength(255),
-                TextInput::make('password')->password()->required(),
+                TextInput::make('password')->password()->required()
+                    ->visibleOn('create'),
                 Select::make('role')->options(User::USER_ROLES),
             ]);
     }
@@ -52,6 +54,11 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('logs')
+                    ->url(fn ($record) => route('filament.admin.resources.users.activities', $record))
+                    ->icon('heroicon-o-chat-bubble-bottom-center-text')
+                    ->color('warning'),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -73,6 +80,7 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'activities' => Pages\ListUserActivities::route('/{record}/activities'),
         ];
     }
 }

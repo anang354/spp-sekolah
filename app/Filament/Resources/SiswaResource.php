@@ -148,12 +148,12 @@ class SiswaResource extends Resource
                 //         ->where('status', '!=', 'lunas')
                 //         ->sum('jumlah_netto') !== 0 ) {
                 //              return $record->tagihans
-                //             ->sum('jumlah_netto') - 
+                //             ->sum('jumlah_netto') -
                 //             $record->pembayaran->sum('jumlah_dibayar');
                 //         } else {
                 //             return 0;
                 //         }
-                   
+
                 // })
                 // ->formatStateUsing(fn ($state) => 'Rp ' . number_format((float) $state, 0, ',', '.')),
                 IconColumn::make('is_active')
@@ -221,6 +221,7 @@ class SiswaResource extends Resource
             'index' => Pages\ListSiswas::route('/'),
             'create' => Pages\CreateSiswa::route('/create'),
             'edit' => Pages\EditSiswa::route('/{record}/edit'),
+            'activities' => Pages\ListSiswaActivities::route('/{record}/activities'),
         ];
     }
 }

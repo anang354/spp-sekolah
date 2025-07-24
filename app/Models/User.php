@@ -7,11 +7,23 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, LogsActivity;
+
+    protected static $recordEvents = ['updated', 'deleted'];
+    protected static $logAttributes = ['*'];
+    protected static $logOnlyDirty = true;
+    protected static $logName = 'user';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "Data user telah  di {$eventName}";
+    }
 
     const ROLE_ADMIN    = "admin";
     const ROLE_EDITOR   = "editor";
@@ -75,5 +87,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    //Jika menggunakan protected  $guarded = ['id']
+    //protected static $logUnguarded = true;
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logExcept(['password', 'remember_token', 'email_verified_at']);
     }
 }

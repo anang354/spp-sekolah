@@ -96,6 +96,7 @@ class BiayaResource extends Resource
             'index' => Pages\ListBiayas::route('/'),
             'create' => Pages\CreateBiaya::route('/create'),
             'edit' => Pages\EditBiaya::route('/{record}/edit'),
+            'activities' => Pages\ListBiayaActivities::route('/{record}/activities'),
         ];
     }
 }

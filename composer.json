@@ -12,6 +12,8 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "masbug/flysystem-google-drive-ext": "^2.4",
+        "pxlrbt/filament-activity-log": "*",
+        "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-backup": "^9.3"
     },
     "require-dev": {
