@@ -16,9 +16,9 @@ use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 
-class CreateAction 
+class CreateAction
 {
-    public static function make(): Action 
+    public static function make(): Action
     {
         return Action::make('create')->label('Buat Tagihan Massal')->icon('heroicon-o-plus')
             ->form([
@@ -74,7 +74,7 @@ class CreateAction
                             $idsDiskon = [];
                             foreach ($siswa->diskon as $diskon) {
                                 if($diskon->berlaku_tagihan === 'sebelum') {
-                                    if($diskon->tipe === 'nominal') 
+                                    if($diskon->tipe === 'nominal')
                                     {
                                         $totalDiskon += $diskon->nominal;
                                     } elseif($diskon->tipe === 'persentase')

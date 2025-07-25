@@ -5,11 +5,31 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Tagihan extends Model
 {
+    use LogsActivity;
     //
     protected $guarded = ['id'];
+
+    protected static $logUnguarded = true;
+
+    protected static $recordEvents = ['updated', 'deleted'];
+    protected static $logAttributes = ['jatuh_tempo', 'jumlah_tagihan', 'jumlah_diskon', 'daftar_biaya', 'daftar_diskon', 'jumlah_netto', 'status', 'keterangan'];
+    protected static $logOnlyDirty = true;
+    protected static $logName = 'tagihan';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "Tagihan siswa telah  di {$eventName}";
+    }
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll();
+    }
 
     const BULAN = [
         '1' => 'Januari',

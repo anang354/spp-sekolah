@@ -191,6 +191,7 @@ class AlumniResource extends Resource
             'index' => Pages\ListAlumnis::route('/'),
             'create' => Pages\CreateAlumni::route('/create'),
             'edit' => Pages\EditAlumni::route('/{record}/edit'),
+            'activities' => Pages\ListAlumniActivities::route('/{record}/activities'),
         ];
     }
 }

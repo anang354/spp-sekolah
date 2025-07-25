@@ -23,7 +23,7 @@ class Siswa extends Model
     protected static $logName = 'user';
     public function getDescriptionForEvent(string $eventName): string
     {
-        return "Data user telah  di {$eventName}";
+        return "Data siswa telah  di {$eventName}";
     }
     public function getActivitylogOptions(): LogOptions
     {

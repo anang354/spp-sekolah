@@ -16,14 +16,25 @@ class User extends Authenticatable
     use HasFactory, Notifiable, LogsActivity;
 
     protected static $recordEvents = ['updated', 'deleted'];
-    protected static $logAttributes = ['*'];
+    protected static $logAttributes = ['name', 'email', 'password', 'is_active', 'role'];
     protected static $logOnlyDirty = true;
     protected static $logName = 'user';
+
+    protected static function booted(): void
+    {
+        static::updating(function ($model) {
+            if($model->isDirty(['remember_token'] && $model->getDirty() === ['remember_token'])) {
+                activity()->disableLogging();
+            }
+        });
+    }
 
     public function getDescriptionForEvent(string $eventName): string
     {
         return "Data user telah  di {$eventName}";
     }
+
+
 
     const ROLE_ADMIN    = "admin";
     const ROLE_EDITOR   = "editor";
@@ -94,7 +105,8 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logAll()
-            ->logExcept(['password', 'remember_token', 'email_verified_at']);
+            ->logOnly([
+                'name', 'email', 'password', 'role', 'is_active',
+            ]);
     }
 }

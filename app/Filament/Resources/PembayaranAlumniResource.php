@@ -139,8 +139,8 @@ class PembayaranAlumniResource extends Resource
                         ->directory('bukti-bayar')
                         ->downloadable() // <<< Penting: Mengizinkan file didownload dari Filament
                         ->previewable() // <<< Opsional: Memungkinkan pratinjau gambar atau PDF (jika didukung browser)
-                        ->visibility('private') 
-                    
+                        ->visibility('private')
+
             ]);
     }
 
@@ -184,6 +184,7 @@ class PembayaranAlumniResource extends Resource
             'index' => Pages\ListPembayaranAlumnis::route('/'),
             'create' => Pages\CreatePembayaranAlumni::route('/create'),
             'edit' => Pages\EditPembayaranAlumni::route('/{record}/edit'),
+            'activities' => Pages\ListPembayaranAlumniActivities::route('/{record}/activities'),
         ];
     }
 }
