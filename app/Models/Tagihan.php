@@ -31,6 +31,14 @@ class Tagihan extends Model
             ->logAll();
     }
 
+    const KEUANGAN_SEKOLAH = 'sekolah';
+    const KEUANGAN_PONDOK = 'pondok';
+
+    const JENIS_KEUANGAN =  [
+        self::KEUANGAN_SEKOLAH => 'sekolah',
+        self::KEUANGAN_PONDOK => 'pondok',
+    ];
+
     const BULAN = [
         '1' => 'Januari',
         '2' => 'Februari',

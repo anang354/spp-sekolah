@@ -17,6 +17,14 @@ class Biaya extends Model
     protected static $logOnlyDirty = true;
     protected static $logName = 'Biaya';
 
+    const KEUANGAN_SEKOLAH = 'sekolah';
+    const KEUANGAN_PONDOK = 'pondok';
+
+    const JENIS_KEUANGAN =  [
+            self::KEUANGAN_SEKOLAH => 'sekolah',
+            self::KEUANGAN_PONDOK => 'pondok',
+        ];
+
 
     public function getActivitylogOptions(): LogOptions
     {

@@ -63,12 +63,13 @@ class PembayaranResource extends Resource
                                 ->whereColumn('jumlah_netto', '>', DB::raw('(SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.tagihan_id = tagihans.id)'))
                                 ->get()
                                 ->mapWithKeys(function ($tagihan) {
-                                    $label = \Carbon\Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F') . ' ' . $tagihan->periode_tahun.' - Rp.'.number_format($tagihan->sisa_tagihan, 0, ",", ".");
+                                    $label = $tagihan->daftar_biaya.' '.\Carbon\Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F') . ' ' . $tagihan->periode_tahun.' - Rp.'.number_format($tagihan->sisa_tagihan, 0, ",", ".");
 
                                     return [$tagihan->id => $label];
                                 });
                         })
                         ->reactive()
+                        ->searchable()
                         ->required()
                         ->columnSpan([
                             'sm' => 2,

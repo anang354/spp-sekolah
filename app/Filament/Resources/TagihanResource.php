@@ -49,7 +49,7 @@ class TagihanResource extends Resource
                                     $date = Carbon::createFromDate($record->periode_tahun, $record->periode_bulan, 1);
                                     // Format ke 'Nama Bulan Tahun' (misal: Januari 2025)
                                     // 'F' untuk nama bulan lengkap, 'Y' untuk tahun 4 digit
-                                    return $date->translatedFormat('F Y');
+                                    return $record->daftar_biaya.' '. $date->translatedFormat('F Y');
                                 }),
                         ]),
                     Grid::make([
@@ -114,6 +114,7 @@ class TagihanResource extends Resource
             'status',
             'periode_bulan',
             'periode_tahun',
+            'jenis_keuangan',
         ])
         ->columns([
             // Kolom Periode
@@ -127,10 +128,11 @@ class TagihanResource extends Resource
                     // 'F' untuk nama bulan lengkap, 'Y' untuk tahun 4 digit
                     return $date->translatedFormat('F Y');
                 }),
+            TextColumn::make('daftar_biaya'),
             TextColumn::make('siswa.nama')->searchable(),
             TextColumn::make('siswa.kelas.nama_kelas')->toggleable(),
-            TextColumn::make('siswa.kelas.jenjang')->label('Jenjang')->toggleable(),
-            TextColumn::make('jatuh_tempo')->date('d F Y')->toggleable(),
+            TextColumn::make('siswa.kelas.jenjang')->label('Jenjang')->toggleable(isToggledHiddenByDefault: true),
+            TextColumn::make('jatuh_tempo')->date('d F Y')->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('jumlah_tagihan')
                 ->label('Jumlah Tagihan')
                 ->prefix('Rp. ')
@@ -157,6 +159,14 @@ class TagihanResource extends Resource
                 ->prefix('Rp. ')
                 ->numeric(decimalPlaces: 0)
                 ->summarize(Sum::make()),
+            TextColumn::make('jenis_keuangan')
+                ->badge()
+                ->label('Jenis Keuangan')
+                ->color(fn (string $state): string => match ($state) {
+                    'pondok' => 'warning',
+                    'sekolah' => 'success',
+                })
+                ->toggleable(),
             TextColumn::make('status')
                 ->badge()
                 ->color(fn (string $state): string => match ($state) {
@@ -202,6 +212,11 @@ class TagihanResource extends Resource
                     'baru' => 'baru',
                 ])
                 ->multiple(),
+            SelectFilter::make('jenis_keuangan')
+                ->options([
+                    'sekolah' => 'sekolah',
+                    'pondok' => 'pondok',
+                ]),
 
             // <<< FILTER BERDASARKAN PERIODE BULAN >>>
             SelectFilter::make('periode_bulan')

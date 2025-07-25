@@ -4,6 +4,7 @@
 namespace App\Filament\Actions\Tagihans;
 
 use App\Models\Tagihan;
+use Filament\Forms\Components\Radio;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
@@ -14,8 +15,8 @@ use Filament\Resources\RelationManagers\RelationManager;
 
 class CreateIndividualAction
 {
-    
-    public static function make(): Action 
+
+    public static function make(): Action
     {
         return Action::make('create')->label('Buat Tagihan Baru')->icon('heroicon-o-plus')
         ->form([
@@ -45,7 +46,15 @@ class CreateIndividualAction
                 ->dehydrated() // agar tetap disimpan walau disabled
                 ->hint(fn ($get) => 'Terbilang : ' . \App\Helpers\Terbilang::make((int) $get('jumlah_netto')))
                 ->hintColor('gray'),
-                TextInput::make('daftar_biaya'),
+                Select::make('daftar_biaya')
+                    ->required()
+                    ->options(fn (RelationManager $livewire) =>
+                    optional($livewire->getOwnerRecord()->kelas)->jenjang
+                        ? \App\Models\Biaya::where('jenjang', $livewire->getOwnerRecord()->kelas->jenjang)
+                        ->pluck('nama_biaya', 'nama_biaya')
+                        ->toArray()
+                        : []
+                    ),
                 TextInput::make('daftar_diskon'),
                 Select::make('status')->required()
                 ->options([
@@ -53,23 +62,27 @@ class CreateIndividualAction
                     'lunas' => 'lunas',
                     'angsur' => 'angsur',
                 ]),
-                TextInput::make('keterangan'),
+                Radio::make('jenis_keuangan')
+                ->options(Tagihan::JENIS_KEUANGAN)
+                ->required(),
+                TextInput::make('keterangan')->columnSpan('full'),
             ])
             ->columns(2)
         ])
         ->action(function (array $data, RelationManager $livewire) {
-            
+
             $siswaId = $livewire->getOwnerRecord()->id;
             // Pastikan tidak ada duplikat (untuk jaga-jaga)
             $exists = Tagihan::where('siswa_id', $siswaId)
                 ->where('periode_bulan', $data['periode_bulan'])
                 ->where('periode_tahun', $data['periode_tahun'])
+                ->where('daftar_biaya', $data['daftar_biaya'])
                 ->exists();
 
             if ($exists) {
                 Notification::make()
                     ->title('Tagihan gagal dibuat')
-                    ->body('Periode yang dipilih sudah memiliki tagihan.')
+                    ->body('Periode yang dipilih sudah memiliki tagihan yang sama.')
                     ->danger()
                     ->send();
                 return;
@@ -97,5 +110,5 @@ class CreateIndividualAction
         });
 
     }
- 
+
 }

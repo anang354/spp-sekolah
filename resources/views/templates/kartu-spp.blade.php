@@ -137,26 +137,63 @@
             </tr>
         </thead>
         <tbody>
+{{--        KODE PERTAMA SEBELUM REVISI--}}
+{{--            @php--}}
+{{--                $totalTagihan = 0;--}}
+{{--            @endphp--}}
+{{--            @foreach($siswa['tagihans'] as $tagihan)--}}
+{{--            <tr>--}}
+{{--                <td>{{ \App\Models\Tagihan::BULAN[$tagihan['periode_bulan']] }} {{ $tagihan['periode_tahun'] }}</td>--}}
+{{--                <td>{{ $tagihan['daftar_biaya'] }}</td>--}}
+{{--                <td>{{ number_format($tagihan['jumlah_tagihan'], 0, '', '.') }}</td>--}}
+{{--                <td>{{ number_format($tagihan['jumlah_diskon'], 0, '', '.') }}</td>--}}
+{{--                <td>{{ number_format($tagihan['jumlah_netto'], 0, '', '.') }}</td>--}}
+{{--                <td>{{ $tagihan['status'] }}</td>--}}
+{{--            </tr>--}}
+{{--            @php--}}
+{{--                $totalTagihan += $tagihan['jumlah_netto'];--}}
+{{--            @endphp--}}
+{{--            @endforeach--}}
+{{--            <tr class="summarize">--}}
+{{--                <td colspan="4">Total</td>--}}
+{{--                <td colspan="2">{{ number_format($totalTagihan, 0, '', '.') }}</td>--}}
+{{--            </tr>--}}
+
             @php
                 $totalTagihan = 0;
+
+                // 1. Kelompokkan tagihan berdasarkan periode
+                $groupedTagihans = collect($siswa['tagihans'])->groupBy(fn($item) => $item['periode_bulan'] . '-' . $item['periode_tahun']);
             @endphp
-            @foreach($siswa['tagihans'] as $tagihan)
-            <tr>
-                <td>{{ \App\Models\Tagihan::BULAN[$tagihan['periode_bulan']] }} {{ $tagihan['periode_tahun'] }}</td>
-                <td>{{ $tagihan['daftar_biaya'] }}</td>
-                <td>{{ number_format($tagihan['jumlah_tagihan'], 0, '', '.') }}</td>
-                <td>{{ number_format($tagihan['jumlah_diskon'], 0, '', '.') }}</td>
-                <td>{{ number_format($tagihan['jumlah_netto'], 0, '', '.') }}</td>
-                <td>{{ $tagihan['status'] }}</td>
-            </tr>
-            @php
-                $totalTagihan += $tagihan['jumlah_netto'];
-            @endphp
+
+            @foreach ($groupedTagihans as $periode => $tagihanGroup)
+                @php
+                    $rowspan = $tagihanGroup->count();
+                    $firstTagihan = $tagihanGroup->first();
+                    [$bulan, $tahun] = explode('-', $periode);
+                @endphp
+
+                @foreach ($tagihanGroup as $index => $tagihan)
+                    <tr style="{{$tagihan['status'] === 'lunas' ? 'background: #63a35c;' : ''}}">
+                        {{-- 2. Kolom Periode hanya ditampilkan pada baris pertama --}}
+                        @if ($index === 0)
+                            <td rowspan="{{ $rowspan }}">
+                                {{ \App\Models\Tagihan::BULAN[$bulan] }} {{ $tahun }}
+                            </td>
+                        @endif
+
+                        <td>{{ $tagihan['daftar_biaya'] }}</td>
+                        <td>{{ number_format($tagihan['jumlah_tagihan'], 0, '', '.') }}</td>
+                        <td>{{ number_format($tagihan['jumlah_diskon'], 0, '', '.') }}</td>
+                        <td>{{ number_format($tagihan['jumlah_netto'], 0, '', '.') }}</td>
+                        <td>{{ $tagihan['status'] }}</td>
+                    </tr>
+                    @php
+                        $totalTagihan += $tagihan['jumlah_netto'];
+                    @endphp
+                @endforeach
             @endforeach
-            <tr class="summarize">
-                <td colspan="4">Total</td>
-                <td colspan="2">{{ number_format($totalTagihan, 0, '', '.') }}</td>
-            </tr>
+
         </tbody>
     </table>
     <div class="mt-2"></div>
@@ -182,11 +219,11 @@
             @foreach($siswa['pembayaran'] as $pembayaran)
             @php
                 $totalPembayaran += $pembayaran['jumlah_dibayar'];
-                $itemTagihan = \App\Models\Tagihan::where('id', $pembayaran['tagihan_id'])->select('periode_bulan', 'periode_tahun')->first();
+                $itemTagihan = \App\Models\Tagihan::where('id', $pembayaran['tagihan_id'])->select('periode_bulan', 'periode_tahun', 'daftar_biaya')->first();
             @endphp
             <tr>
                 <td>{{ $pembayaran['tanggal_pembayaran'] }}</td>
-                <td>{{ \App\Models\Tagihan::BULAN[$itemTagihan->periode_bulan].' '.$itemTagihan->periode_tahun }}</td>
+                <td> {{$itemTagihan->daftar_biaya}} {{ \App\Models\Tagihan::BULAN[$itemTagihan->periode_bulan].' '.$itemTagihan->periode_tahun }}</td>
                 <td>{{ number_format($pembayaran['jumlah_dibayar'], 0, '', '.') }}</td>
                 <td>{{ $pembayaran['metode_pembayaran'] }}</td>
                 <td>{{ \App\Models\User::find($pembayaran['user_id'])->value('name') }}</td>

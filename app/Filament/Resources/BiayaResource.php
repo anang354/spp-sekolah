@@ -42,7 +42,8 @@ class BiayaResource extends Resource
                     'smp' => 'SMP',
                     'sma' => 'SMA',
                 ]),
-                TextInput::make('keterangan'),
+                Forms\Components\Radio::make('jenis_keuangan')->required()
+                            ->options(Biaya::JENIS_KEUANGAN),
                 Section::make('Nominal Biaya')->schema([
                     TextInput::make('nominal')->numeric()->prefix('Rp.')->required()
                     ->live(debounce: 500) // agar update terbilang secara live
@@ -52,6 +53,7 @@ class BiayaResource extends Resource
                     Forms\Components\Placeholder::make('terbilang')
                     ->label('Terbilang')
                     ->content(fn ($get) => $get('terbilang')),
+                    TextInput::make('keterangan'),
                 ])
             ]);
     }
@@ -66,7 +68,8 @@ class BiayaResource extends Resource
                 ->prefix('Rp. ')
                 ->numeric(decimalPlaces: 0)
                 ->summarize(Sum::make()),
-                TextColumn::make('keterangan')->toggleable(isToggledHiddenByDefault: true)
+                TextColumn::make('jenis_keuangan'),
+                TextColumn::make('keterangan')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
