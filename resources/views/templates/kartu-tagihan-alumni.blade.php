@@ -138,19 +138,37 @@
         <tbody>
             @php
                 $totalTagihan = 0;
+
+                // 1. Kelompokkan tagihan berdasarkan periode
+                $groupedTagihans = collect($siswa['tagihans'])->groupBy(fn($item) => $item['periode_bulan'] . '-' . $item['periode_tahun']);
             @endphp
-            @foreach($siswa['tagihans'] as $tagihan)
-            <tr>
-                <td>{{ \App\Models\Tagihan::BULAN[$tagihan['periode_bulan']] }} {{ $tagihan['periode_tahun'] }}</td>
-                <td>{{ $tagihan['daftar_biaya'] }}</td>
-                <td>{{ number_format($tagihan['jumlah_tagihan'], 0, '', '.') }}</td>
-                <td>{{ number_format($tagihan['jumlah_diskon'], 0, '', '.') }}</td>
-                <td>{{ number_format($tagihan['jumlah_netto'], 0, '', '.') }}</td>
-                <td>{{ $tagihan['status'] }}</td>
-            </tr>
-            @php
-                $totalTagihan += $tagihan['jumlah_netto'];
-            @endphp
+
+            @foreach ($groupedTagihans as $periode => $tagihanGroup)
+                @php
+                    $rowspan = $tagihanGroup->count();
+                    $firstTagihan = $tagihanGroup->first();
+                    [$bulan, $tahun] = explode('-', $periode);
+                @endphp
+
+                @foreach ($tagihanGroup as $index => $tagihan)
+                    <tr style="{{$tagihan['status'] === 'lunas' ? 'background: #63a35c;' : ''}}">
+                        {{-- 2. Kolom Periode hanya ditampilkan pada baris pertama --}}
+                        @if ($index === 0)
+                            <td rowspan="{{ $rowspan }}">
+                                {{ \App\Models\Tagihan::BULAN[$bulan] }} {{ $tahun }}
+                            </td>
+                        @endif
+
+                        <td>{{ $tagihan['daftar_biaya'] }}</td>
+                        <td>{{ number_format($tagihan['jumlah_tagihan'], 0, '', '.') }}</td>
+                        <td>{{ number_format($tagihan['jumlah_diskon'], 0, '', '.') }}</td>
+                        <td>{{ number_format($tagihan['jumlah_netto'], 0, '', '.') }}</td>
+                        <td>{{ $tagihan['status'] }}</td>
+                    </tr>
+                    @php
+                        $totalTagihan += $tagihan['jumlah_netto'];
+                    @endphp
+                @endforeach
             @endforeach
             <tr class="summarize">
                 <td colspan="4">Total</td>

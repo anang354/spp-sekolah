@@ -31,45 +31,83 @@ class GenerateAlumniBulkAction
                     for ($i = 0; $i < 6; $i++) {
                         $randomString .= $characters[random_int(0, $charactersLength - 1)];
                     }
-        // Hitung total tagihan netto (semua tagihan siswa)
-        $totalTagihan = $siswa->tagihans()->sum('jumlah_netto');
+                    // Hitung total tagihan netto (semua tagihan siswa)
+                    //$totalTagihan = $siswa->tagihans()->sum('jumlah_netto');;
 
-        // Hitung total dibayar (semua pembayaran siswa)
-        $totalDibayar = $siswa->pembayaran()->sum('jumlah_dibayar');
+                    // Hitung total dibayar (semua pembayaran siswa)
+                    //$totalDibayar = $siswa->pembayaran()->sum('jumlah_dibayar');
 
-        // Hitung sisa tagihan
-        $sisaTagihan = max($totalTagihan - $totalDibayar, 0); // Hindari negatif
-        $filePath =$folderPath.'/data-pembayaran-'.$siswa->nama.'-'.$randomString.'.pdf';
+                    // Hitung sisa tagihan
+                    //$sisaTagihan = max($totalTagihan - $totalDibayar, 0); // Hindari negatif
+                    
+                    $filePath =$folderPath.'/data-pembayaran-'.$siswa->nama.'-'.$randomString.'.pdf';
 
-        // Simpan ke tabel alumnis
-        try {
-            \App\Models\Alumni::create([
-                'nama' => $siswa->nama,
-                'jenjang' => $siswa->kelas->jenjang ?? '-',
-                'tahun_lulus' => now()->year,
-                'jumlah_tagihan' => $sisaTagihan,
-                'jumlah_diskon' => 0,
-                'jumlah_netto' => $sisaTagihan,
-                'status' => 'baru',
-                'file' => $filePath,
-                'keterangan' => 'Dipindahkan dari siswa aktif',
-            ]);
-            $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas'])->first()->toArray();
-            $path = public_path().'/images/logo-sekolah.jpg';
-            $type = pathinfo($path, PATHINFO_EXTENSION);
-            $data = file_get_contents($path);
-            $image = 'data:image/'.$type.';base64,'.base64_encode($data);
-            $pdf = Pdf::loadView('templates.kartu-tagihan-alumni',[
-                'siswa' => $dataSiswa,
-                'logo' => $image
-            ])->save(Storage::disk('public')->path($filePath));
-        } catch(\Exception $e) {
-            Notification::make()
-                ->title('Generate Alumni Gagal!')
-                ->danger()
-                ->send();
-        }
-    }
+                    $totalTagihanSekolah = $siswa->tagihans()
+                        ->where('jenis_keuangan', 'sekolah')
+                        ->sum('jumlah_netto');
+
+                    $totalDibayarSekolah = $siswa->pembayaran()
+                        ->whereHas('tagihan', fn ($query) =>
+                            $query->where('jenis_keuangan', 'sekolah')
+                        )
+                        ->sum('jumlah_dibayar');
+
+                    $sisaSekolah = max($totalTagihanSekolah - $totalDibayarSekolah, 0);
+
+                    // 2. Sisa Tagihan Jenis 'pondok'
+                    $totalTagihanPondok = $siswa->tagihans()
+                        ->where('jenis_keuangan', 'pondok')
+                        ->sum('jumlah_netto');
+
+                    $totalDibayarPondok = $siswa->pembayaran()
+                        ->whereHas('tagihan', fn ($query) =>
+                            $query->where('jenis_keuangan', 'pondok')
+                        )
+                        ->sum('jumlah_dibayar');
+
+                    $sisaPondok = max($totalTagihanPondok - $totalDibayarPondok, 0);
+                    // Simpan ke tabel alumnis
+                    try {
+                        \App\Models\Alumni::create([
+                            'nama' => $siswa->nama,
+                            'jenjang' => $siswa->kelas->jenjang ?? '-',
+                            'tahun_lulus' => now()->year,
+                            'jumlah_tagihan' => $sisaSekolah,
+                            'jumlah_diskon' => 0,
+                            'jumlah_netto' => $sisaSekolah,
+                            'status' => 'baru',
+                            'file' => $filePath,
+                            'keterangan' => 'Dipindahkan dari siswa aktif',
+                            'jenis_keuangan' => 'sekolah'
+                        ]);
+                        \App\Models\Alumni::create([
+                            'nama' => $siswa->nama,
+                            'jenjang' => $siswa->kelas->jenjang ?? '-',
+                            'tahun_lulus' => now()->year,
+                            'jumlah_tagihan' => $sisaPondok,
+                            'jumlah_diskon' => 0,
+                            'jumlah_netto' => $sisaPondok,
+                            'status' => 'baru',
+                            'file' => $filePath,
+                            'keterangan' => 'Dipindahkan dari siswa aktif',
+                            'jenis_keuangan' => 'pondok'
+                        ]);
+                        $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas'])->first()->toArray();
+                        $path = public_path().'/images/logo-sekolah.jpg';
+                        $type = pathinfo($path, PATHINFO_EXTENSION);
+                        $data = file_get_contents($path);
+                        $image = 'data:image/'.$type.';base64,'.base64_encode($data);
+                        $pdf = Pdf::loadView('templates.kartu-tagihan-alumni',[
+                            'siswa' => $dataSiswa,
+                            'logo' => $image
+                        ])->save(Storage::disk('public')->path($filePath));
+                    } catch(\Exception $e) {
+                        Notification::make()
+                            ->title('Generate Alumni Gagal!')
+                            ->danger()
+                            ->send();
+                    }
+                }
 
     // (Opsional) Kirim notifikasi
     Notification::make()

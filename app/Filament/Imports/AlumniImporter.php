@@ -44,6 +44,9 @@ class AlumniImporter extends Importer
                 ->rules(['max:255']),
             ImportColumn::make('keterangan')
                 ->rules(['max:255']),
+            ImportColumn::make('jenis_keuangan')
+                ->requiredMapping()
+                ->rules(['required','max:255']),
         ];
     }
 

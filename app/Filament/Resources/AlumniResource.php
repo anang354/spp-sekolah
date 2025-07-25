@@ -82,8 +82,9 @@ class AlumniResource extends Resource
                 ->dehydrated() // agar tetap disimpan walau disabled
                 ->hint(fn ($get) => 'Terbilang : ' . \App\Helpers\Terbilang::make((int) $get('jumlah_netto')))
                 ->hintColor('gray'),
-            TextInput::make('keterangan')
-            ->columnSpan('full'),
+            TextInput::make('keterangan'),
+            Radio::make('jenis_keuangan')
+                ->options(\App\Models\Tagihan::JENIS_KEUANGAN),
             ]);
     }
 

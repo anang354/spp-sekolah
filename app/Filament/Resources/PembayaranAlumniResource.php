@@ -43,7 +43,15 @@ class PembayaranAlumniResource extends Resource
                 ->schema([
                     Select::make('alumni_id')
                         ->label('Pilih Alumni')
-                        ->options(\App\Models\Alumni::all()->pluck('nama', 'id'))
+                        ->options(function (): array { // <<< Gunakan closure untuk membangun opsi
+                            return \App\Models\Alumni::all()->mapWithKeys(function ($alumni) {
+                                // Pastikan kolom 'jenjang' ada di tabel 'alumni' Anda
+                                $displayLabel = "{$alumni->nama} - {$alumni->jenis_keuangan}";
+                                
+                                // Mengembalikan array asosiatif: [id_alumni => "Nama - Jenjang"]
+                                return [$alumni->id => $displayLabel];
+                            })->toArray(); // Mengkonversi koleksi ke array PHP biasa
+                        })
                         ->preload()
                         ->live()
                         ->required()
