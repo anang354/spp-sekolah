@@ -3,9 +3,10 @@
 
 namespace App\Filament\Actions\Tagihans;
 
+use Carbon\Carbon;
 use App\Models\Tagihan;
-use Filament\Forms\Components\Radio;
 use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -23,10 +24,11 @@ class CreateIndividualAction
             Section::make('')
             ->schema([
                 Select::make('periode_bulan')
+                ->multiple()
                 ->options(Tagihan::BULAN),
                 Select::make('periode_tahun')
                 ->options(Tagihan::TAHUN),
-                DatePicker::make('jatuh_tempo')->label('Tanggal Jatuh Tempo')->required()->columnSpan('full'),
+                // DatePicker::make('jatuh_tempo')->label('Tanggal Jatuh Tempo')->required()->columnSpan('full'),
                 TextInput::make('jumlah_tagihan')->numeric()->required()
                 ->live(debounce: 500)
                 ->afterStateUpdated(function (callable $set, callable $get) {
@@ -73,8 +75,9 @@ class CreateIndividualAction
 
             $siswaId = $livewire->getOwnerRecord()->id;
             // Pastikan tidak ada duplikat (untuk jaga-jaga)
-            $exists = Tagihan::where('siswa_id', $siswaId)
-                ->where('periode_bulan', $data['periode_bulan'])
+            foreach($data['periode_bulan'] as $bulan) {
+                $exists = Tagihan::where('siswa_id', $siswaId)
+                ->where('periode_bulan', $bulan)
                 ->where('periode_tahun', $data['periode_tahun'])
                 ->where('daftar_biaya', $data['daftar_biaya'])
                 ->exists();
@@ -87,13 +90,13 @@ class CreateIndividualAction
                     ->send();
                 return;
             }
-
+            $tanggal = Carbon::createFromDate($data['periode_tahun'], $bulan, 1)->endOfMonth()->toDateString();
             // Simpan data
             Tagihan::create([
                 'siswa_id' => $siswaId,
-                'periode_bulan' => $data['periode_bulan'],
+                'periode_bulan' => $bulan,
                 'periode_tahun' => $data['periode_tahun'],
-                'jatuh_tempo' => $data['jatuh_tempo'],
+                'jatuh_tempo' => $tanggal,
                 'jumlah_tagihan' => $data['jumlah_tagihan'],
                 'jumlah_diskon' => $data['jumlah_diskon'],
                 'jumlah_netto' => $data['jumlah_tagihan'] - $data['jumlah_diskon'],
@@ -102,6 +105,8 @@ class CreateIndividualAction
                 'status' => 'baru',
                 'keterangan' => $data['keterangan']
             ]);
+            }
+            
 
             Notification::make()
                 ->title('Tagihan berhasil dibuat')

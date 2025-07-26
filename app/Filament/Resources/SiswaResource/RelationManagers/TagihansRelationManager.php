@@ -122,7 +122,7 @@ class TagihansRelationManager extends RelationManager
                     (SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.tagihan_id = tagihans.id) as total_dibayar,
                     (jumlah_netto - (SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.tagihan_id = tagihans.id)) as sisa_tagihan
                 ')
-                    ->orderByDesc('created_at');
+                    ->orderByDesc('jatuh_tempo');
             })
             ->filters([
                 //
