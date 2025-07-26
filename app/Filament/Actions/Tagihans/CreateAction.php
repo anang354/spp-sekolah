@@ -3,6 +3,7 @@
 
 namespace App\Filament\Actions\Tagihans;
 
+use Carbon\Carbon;
 use App\Models\Biaya;
 use App\Models\Siswa;
 use App\Models\Tagihan;
@@ -40,7 +41,7 @@ class CreateAction
                 Select::make('periode_tahun')->options([
                     Tagihan::TAHUN
                 ])->required(),
-                DatePicker::make('jatuh_tempo')->label('Tanggal Jatuh Tempo')->required()
+                // DatePicker::make('jatuh_tempo')->label('Tanggal Jatuh Tempo')->required()
             ])
             ->action(function (array $data){
                 $jenjang = $data['jenjang'];
@@ -91,12 +92,13 @@ class CreateAction
                                 }
                                 $saveIdsDiskon = implode(', ', $idsDiskon);
                                 $jumlahNetto = $totalBiaya - $totalDiskon;
+                                $tanggal = Carbon::createFromDate($data['periode_tahun'], $data['periode_bulan'], 1)->endOfMonth()->toDateString();
 
                                 Tagihan::create([
                                     'siswa_id' => $siswa->id,
                                     'periode_bulan' => $data['periode_bulan'],
                                     'periode_tahun' => $data['periode_tahun'],
-                                    'jatuh_tempo' => $data['jatuh_tempo'],
+                                    'jatuh_tempo' => $tanggal,
                                     'jumlah_tagihan' => $totalBiaya,
                                     'jumlah_diskon' => $totalDiskon,
                                     'daftar_biaya' => $biaya->nama_biaya,
