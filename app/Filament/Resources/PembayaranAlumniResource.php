@@ -161,7 +161,19 @@ class PembayaranAlumniResource extends Resource
                 TextColumn::make('jumlah_dibayar')
                 ->numeric(decimalPlaces: 0)
                 ->summarize(Sum::make()),
-                TextColumn::make('metode_pembayaran'),
+                TextColumn::make('metode_pembayaran')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'transfer' => 'info',
+                    'tunai' => 'success',
+                }),
+                TextColumn::make('alumni.jenis_keuangan')
+                    ->label('Keuangan')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'sekolah' => 'success',
+                        'pondok' => 'warning',
+                    }),
                 TextColumn::make('user.name')
                     ->label('Operator'),
             ])

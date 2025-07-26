@@ -116,24 +116,31 @@ class AlumniResource extends Resource
                 ->getStateUsing(fn ($record) => $record->jumlah_netto - ($record->total_pembayaran ?? 0))
                 ->numeric(decimalPlaces: 0)
                 ->prefix('Rp '),
+                TextColumn::make('jenis_keuangan')
+                    ->label('Keuangan'),
                 TextColumn::make('status')
-            ->badge()
-            ->color(fn (string $state): string => match ($state) {
-                'baru' => 'info',
-                'lunas' => 'success',
-                'angsur' => 'warning',
-            })
-            ->icons([
-                'heroicon-m-check-badge' => 'lunas',
-                'heroicon-m-arrow-path' => 'angsur',
-                'heroicon-m-clock' => 'baru',
-            ]),
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'baru' => 'info',
+                    'lunas' => 'success',
+                    'angsur' => 'warning',
+                })
+                ->icons([
+                    'heroicon-m-check-badge' => 'lunas',
+                    'heroicon-m-arrow-path' => 'angsur',
+                    'heroicon-m-clock' => 'baru',
+                ]),
             ])
             ->filters([
                 SelectFilter::make('jenjang')
                     ->options([
                         'smp' => 'SMP',
                         'sma' => 'SMA',
+                    ]),
+                SelectFilter::make('jenis_keuangan')
+                    ->options([
+                        'sekolah' => 'sekolah',
+                        'pondok' => 'pondok'
                     ]),
                 SelectFilter::make('tahun_lulus')
                 ->options(function () {

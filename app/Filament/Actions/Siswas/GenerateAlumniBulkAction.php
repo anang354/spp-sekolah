@@ -68,30 +68,36 @@ class GenerateAlumniBulkAction
                     $sisaPondok = max($totalTagihanPondok - $totalDibayarPondok, 0);
                     // Simpan ke tabel alumnis
                     try {
-                        \App\Models\Alumni::create([
-                            'nama' => $siswa->nama,
-                            'jenjang' => $siswa->kelas->jenjang ?? '-',
-                            'tahun_lulus' => now()->year,
-                            'jumlah_tagihan' => $sisaSekolah,
-                            'jumlah_diskon' => 0,
-                            'jumlah_netto' => $sisaSekolah,
-                            'status' => 'baru',
-                            'file' => $filePath,
-                            'keterangan' => 'Dipindahkan dari siswa aktif',
-                            'jenis_keuangan' => 'sekolah'
-                        ]);
-                        \App\Models\Alumni::create([
-                            'nama' => $siswa->nama,
-                            'jenjang' => $siswa->kelas->jenjang ?? '-',
-                            'tahun_lulus' => now()->year,
-                            'jumlah_tagihan' => $sisaPondok,
-                            'jumlah_diskon' => 0,
-                            'jumlah_netto' => $sisaPondok,
-                            'status' => 'baru',
-                            'file' => $filePath,
-                            'keterangan' => 'Dipindahkan dari siswa aktif',
-                            'jenis_keuangan' => 'pondok'
-                        ]);
+                        if($sisaSekolah !== 0) {
+                            \App\Models\Alumni::create([
+                                'nama' => $siswa->nama,
+                                'jenjang' => $siswa->kelas->jenjang ?? '-',
+                                'tahun_lulus' => now()->year,
+                                'jumlah_tagihan' => $sisaSekolah,
+                                'jumlah_diskon' => 0,
+                                'jumlah_netto' => $sisaSekolah,
+                                'status' => 'baru',
+                                'file' => $filePath,
+                                'keterangan' => 'Dipindahkan dari siswa aktif',
+                                'jenis_keuangan' => 'sekolah'
+                            ]);
+                        }
+                        if($sisaPondok !== 0)
+                        {
+                            \App\Models\Alumni::create([
+                                'nama' => $siswa->nama,
+                                'jenjang' => $siswa->kelas->jenjang ?? '-',
+                                'tahun_lulus' => now()->year,
+                                'jumlah_tagihan' => $sisaPondok,
+                                'jumlah_diskon' => 0,
+                                'jumlah_netto' => $sisaPondok,
+                                'status' => 'baru',
+                                'file' => $filePath,
+                                'keterangan' => 'Dipindahkan dari siswa aktif',
+                                'jenis_keuangan' => 'pondok'
+                            ]);
+                        }
+                        
                         $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas'])->first()->toArray();
                         $path = public_path().'/images/logo-sekolah.jpg';
                         $type = pathinfo($path, PATHINFO_EXTENSION);
