@@ -79,6 +79,7 @@ class GenerateAlumniBulkAction
                                 'status' => 'baru',
                                 'file' => $filePath,
                                 'keterangan' => 'Dipindahkan dari siswa aktif',
+                                'alamat' => $siswa->alamatSambung->kelompok.'/'.$siswa->alamatSambung->desa.'/'.$siswa->alamatSambung->daerah,
                                 'jenis_keuangan' => 'sekolah'
                             ]);
                         }
@@ -94,11 +95,12 @@ class GenerateAlumniBulkAction
                                 'status' => 'baru',
                                 'file' => $filePath,
                                 'keterangan' => 'Dipindahkan dari siswa aktif',
+                                'alamat' => $siswa->alamatSambung->kelompok.'/'.$siswa->alamatSambung->desa.'/'.$siswa->alamatSambung->daerah,
                                 'jenis_keuangan' => 'pondok'
                             ]);
                         }
                         
-                        $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas'])->first()->toArray();
+                        $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas', 'alamatSambung'])->first()->toArray();
                         $path = public_path().'/images/logo-sekolah.jpg';
                         $type = pathinfo($path, PATHINFO_EXTENSION);
                         $data = file_get_contents($path);

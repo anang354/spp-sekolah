@@ -99,6 +99,8 @@ class AlumniResource extends Resource
                 TextColumn::make('nama')->searchable(),
                 TextColumn::make('tahun_lulus')->sortable()->toggleable(),
                 TextColumn::make('jenjang'),
+                TextColumn::make('alamat')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('jumlah_tagihan')
                 ->sortable()
                 ->numeric(decimalPlaces: 0),
