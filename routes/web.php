@@ -2,6 +2,7 @@
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\KartuSppController;
 
 Route::get('/', function () {
