@@ -103,7 +103,8 @@ class CreateIndividualAction
                 'daftar_biaya' => $data['daftar_biaya'],
                 'daftar_diskon' => $data['daftar_diskon'],
                 'status' => 'baru',
-                'keterangan' => $data['keterangan']
+                'keterangan' => $data['keterangan'],
+                'jenis_keuangan' => $data['jenis_keuangan'],
             ]);
             }
             
