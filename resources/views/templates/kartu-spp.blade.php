@@ -118,6 +118,7 @@
     <div class="bio">
         <p class="text-bold">Nama : {{ $siswa['nama'] }}</p>
         <p class="text-bold">Kelas : {{ $siswa['kelas']['nama_kelas'] }}</p>
+        <p class="text-bold">Alamat Sambung : {{ $siswa['alamat_sambung']['kelompok'].'/'.$siswa['alamat_sambung']['desa'].'/'.$siswa['alamat_sambung']['daerah'] }}</p>
         {{-- <p class="text-bold">Alamat Sambung: Patam 2, Sekupang, Batam</p> --}}
     </div>
     <table class="tb-tagihan">

@@ -11,7 +11,7 @@ class KartuSppController extends Controller
 
     public function index(Request $request)
     {
-        $siswa = \App\Models\Siswa::where('id',$request->id)->with(['tagihans', 'pembayaran', 'kelas'])->first()->toArray();
+        $siswa = \App\Models\Siswa::where('id',$request->id)->with(['tagihans', 'pembayaran', 'kelas', 'alamatSambung'])->first()->toArray();
         $path = public_path().'/images/logo-sekolah.jpg';
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
