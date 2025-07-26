@@ -23,3 +23,7 @@ Route::get('/kartu-alumni', function() {
     ]);
     return $pdf->stream();
 });
+
+Route::get('/tes', function() {
+    Artisan::call('storage:link');
+});
