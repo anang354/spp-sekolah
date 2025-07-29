@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Diskon extends Model
@@ -13,5 +14,9 @@ class Diskon extends Model
     public function siswa(): BelongsToMany
     {
         return $this->belongsToMany(Siswa::class, 'diskon_siswa')->withTimestamps();
+    }
+    public function biaya(): BelongsTo
+    {
+        return $this->belongsTo(Biaya::class);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 class Biaya extends Model
@@ -30,6 +31,11 @@ class Biaya extends Model
     {
         return LogOptions::defaults()
              ->logAll();
+    }
+
+    public function diskon(): HasMany
+    {
+        return $this->hasMany(Diskon::class);
     }
 
 }

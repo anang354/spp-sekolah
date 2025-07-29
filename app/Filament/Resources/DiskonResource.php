@@ -37,10 +37,13 @@ class DiskonResource extends Resource
                     'nominal' => 'Nominal (Rp)'
                 ])->columnSpan('full')->required()->live(),
                 TextInput::make('nama_diskon')->required(),
-                Select::make('berlaku_tagihan')->options([
-                    'sebelum' => 'Sebelum Tagihan',
-                    'setelah' => 'Setelah Tagihan'
-                ])->required(),
+                Select::make('biaya_id')
+                    ->label('Biaya yang di Diskon')
+                    ->options(
+                        \App\Models\Biaya::all()->mapWithKeys(fn ($a) => [
+                            $a->id => "{$a->nama_biaya} - {$a->jenjang}"
+                        ])
+                    )->required(),
                 Section::make('Diskon')->schema([
                     TextInput::make('persentase')->suffix('%')->columnSpan(1)
                         ->visible(fn (callable $get) => $get('tipe') === 'persentase'),
@@ -58,7 +61,7 @@ class DiskonResource extends Resource
             ->columns([
                 TextColumn::make('nama_diskon'),
                 TextColumn::make('tipe'),
-                TextColumn::make('berlaku_tagihan'),
+                TextColumn::make('biaya.nama_biaya')->label('Biaya yang di Diskon'),
                 TextColumn::make('persentase')
                 ->suffix('%'),
                 TextColumn::make('nominal')

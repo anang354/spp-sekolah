@@ -79,8 +79,9 @@ class CreateAction
 
                                 $totalDiskon = 0;
                                 $idsDiskon = [];
+
                                 foreach ($siswa->diskon as $diskon) {
-                                    if ($diskon->berlaku_tagihan === 'sebelum') {
+                                    if($diskon->biaya->id === $biaya->id) {
                                         if ($diskon->tipe === 'nominal') {
                                             $totalDiskon += $diskon->nominal;
                                         } elseif ($diskon->tipe === 'persentase') {
@@ -90,6 +91,19 @@ class CreateAction
                                         $idsDiskon[] = (string)$diskon->nama_diskon;
                                     }
                                 }
+
+//                                foreach ($siswa->diskon as $diskon) {
+//                                    if ($diskon->berlaku_tagihan === 'sebelum') {
+//                                        if ($diskon->tipe === 'nominal') {
+//                                            $totalDiskon += $diskon->nominal;
+//                                        } elseif ($diskon->tipe === 'persentase') {
+//                                            $diskonIs = $totalBiaya * ($diskon->persentase / 100);
+//                                            $totalDiskon += intval($diskonIs);
+//                                        }
+//                                        $idsDiskon[] = (string)$diskon->nama_diskon;
+//                                    }
+//                                }
+
                                 $saveIdsDiskon = implode(', ', $idsDiskon);
                                 $jumlahNetto = $totalBiaya - $totalDiskon;
                                 $tanggal = Carbon::createFromDate($data['periode_tahun'], $data['periode_bulan'], 1)->endOfMonth()->toDateString();

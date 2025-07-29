@@ -17,7 +17,8 @@ return new class extends Migration
             $table->float('persentase')->nullable();
             $table->integer('nominal')->nullable();
             $table->enum('tipe', ['persentase', 'nominal']);
-            $table->enum('berlaku_tagihan', ['sebelum', 'setelah']);
+//            $table->enum('berlaku_tagihan', ['sebelum', 'setelah']);
+            $table->foreignId('biaya_id')->constrained()->cascadeOnDelete();
             $table->string('keterangan')->nullable();
             $table->timestamps();
         });
