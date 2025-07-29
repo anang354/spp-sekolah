@@ -31,6 +31,9 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Violet,
             ])
+//            ->brandLogo(asset('images/logo-light.png'))
+//            ->darkModeBrandLogo(asset('images/logo-dark.png'))
+//            ->brandLogoHeight('3rem')
             ->maxContentWidth('full')
             ->databaseNotifications()
             ->sidebarCollapsibleOnDesktop()

@@ -86,6 +86,7 @@ class PembayaranResource extends Resource
                     ])
                     ->schema([
                          Radio::make('metode_pembayaran')
+                             ->required()
                             ->options([
                                 'tunai' => 'Tunai',
                                 'transfer' => 'Transfer',
