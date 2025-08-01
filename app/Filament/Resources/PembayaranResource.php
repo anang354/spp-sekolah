@@ -159,6 +159,7 @@ class PembayaranResource extends Resource
             ->defaultPaginationPageOption(25)
             ->defaultSort('created_at', 'desc')
             ->columns([
+                TextColumn::make('nomor_bayar')->searchable(),
                 TextColumn::make('siswa.nama')->searchable(),
                 TextColumn::make('tanggal_pembayaran')
                 ->date('l, d F Y'),

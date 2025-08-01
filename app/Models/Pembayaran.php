@@ -6,10 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Carbon\Carbon;
 
 class Pembayaran extends Model
 {
     use LogsActivity;
+
+    public static function generateNomorBayar(): string
+    {
+        $bulan = Carbon::now()->format('m');
+        $tahun = Carbon::now()->format('Y');
+        $count = self::whereMonth('created_at', $bulan)
+                ->whereYear('created_at', $tahun)
+                ->count() + 1;
+
+        $urutan = str_pad($count, 6, '0', STR_PAD_LEFT);
+
+        return "BLBS/{$bulan}/{$tahun}/{$urutan}";
+    }
 
     protected $guarded = ['id'];
     protected static $logUnguarded = true;
@@ -43,6 +57,10 @@ class Pembayaran extends Model
     {
         static::creating(function ($pembayaran) {
             $pembayaran->user_id = auth()->user()->id;
+            //generate nomor pembayaran untuk pembayaranResource (tagihan satuan)
+            if(!$pembayaran->nomor_bayar){
+                $pembayaran->nomor_bayar = self::generateNomorBayar();
+            }
         });
         static::created(function ($pembayaran) {
             $tagihan = $pembayaran->tagihan;
