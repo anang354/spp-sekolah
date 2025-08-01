@@ -31,6 +31,11 @@ class MultiplePembayaran extends Page implements HasForms
     protected static string $view = 'filament.pages.multiple-pembayaran';
     public ?array $data = [];
 
+    public static function canAccess() : bool 
+    {
+        return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
+    }
+
     public function mount(): void
     {
         $this->form->fill([]); // Or with specific data: $this->form->fill($this->record->toArray());
