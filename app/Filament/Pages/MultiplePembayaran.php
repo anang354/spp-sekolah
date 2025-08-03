@@ -31,7 +31,7 @@ class MultiplePembayaran extends Page implements HasForms
     protected static string $view = 'filament.pages.multiple-pembayaran';
     public ?array $data = [];
 
-    public static function canAccess() : bool 
+    public static function canAccess() : bool
     {
         return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
     }
@@ -88,6 +88,10 @@ class MultiplePembayaran extends Page implements HasForms
 
                 Repeater::make('Tagihan')
                     ->addActionLabel('Tambah Tagihan yang akan dibayar')
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $total = collect($state)->pluck('jumlah_dibayar')->sum();
+                        $set('total_semua_dibayar', $total);
+                    })
                     ->label('Daftar Tagihan')
                     ->default([])
                     ->schema([
@@ -117,6 +121,16 @@ class MultiplePembayaran extends Page implements HasForms
                     ])
                     ->minItems(1)
                     ->columns(2),
+                TextInput::make('total_semua_dibayar')
+                    ->label('Total Semua Dibayar')
+                    ->disabled()
+                    ->dehydrated(true)
+                    ->prefix('Rp. ')
+                    ->numeric()
+                    ->default(0)
+                    ->live()
+                    ->hint(fn ($get) => \App\Helpers\Terbilang::make((int) $get('total_semua_dibayar')))
+                    ->hintColor('warning'),
                 FileUpload::make('bukti_bayar')
                     ->disk('local')
                     ->directory('bukti-bayar')

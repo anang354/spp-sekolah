@@ -159,7 +159,7 @@ class PembayaranResource extends Resource
             ->defaultPaginationPageOption(25)
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('nomor_bayar')->searchable(),
+                TextColumn::make('nomor_bayar')->searchable()->toggleable(),
                 TextColumn::make('siswa.nama')->searchable(),
                 TextColumn::make('tanggal_pembayaran')
                 ->date('l, d F Y'),
@@ -185,6 +185,9 @@ class PembayaranResource extends Resource
                         'tunai' => 'success',
                         'transfer' => 'info',
                     }),
+                TextColumn::make('user.name')
+                    ->label('Operator')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('keterangan')
                 ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
