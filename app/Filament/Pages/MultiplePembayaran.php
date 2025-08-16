@@ -82,6 +82,7 @@ class MultiplePembayaran extends Page implements HasForms
                 Select::make('siswa_id')
                     ->label('Pilih Siswa')
                     ->options(\App\Models\Siswa::all()->pluck('nama', 'id')->toArray())
+                    ->searchable()
                     ->required()
                     ->reactive()
                     ->afterStateUpdated(fn ($state, callable $set) => $set('Tagihan', [])),
