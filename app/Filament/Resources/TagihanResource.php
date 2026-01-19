@@ -254,6 +254,8 @@ class TagihanResource extends Resource
             \Filament\Tables\Actions\BulkActionGroup::make([
                 \Filament\Tables\Actions\DeleteBulkAction::make()
                     ->visible(fn()=> auth()->user()->role === 'admin'),
+                \App\Filament\Actions\Tagihans\BroadcastTagihanAction::make(1, 'Broadcast Tagihan'),
+                \App\Filament\Actions\Tagihans\BroadcastTagihanAction::make(2, 'Follow Up Tagihan'),
             ]),
         ]);
     }

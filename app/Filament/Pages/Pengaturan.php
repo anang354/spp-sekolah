@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Filament\Pages;
+
+use Filament\Forms\Form;
+use Filament\Pages\Page;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Components;
+use Filament\Actions\Action;
+use Filament\Support\Exceptions\Halt;
+
+class Pengaturan extends Page implements HasForms
+{
+    use InteractsWithForms;
+    public ?array $data = []; 
+
+    public ?\App\Models\Pengaturan $record = null;
+
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+
+    protected static string $view = 'filament.pages.pengaturan';
+
+    public function mount(): void 
+    {
+        $this->record = \App\Models\Pengaturan::firstOrCreate([]);
+
+        // Isi data dengan atribut record
+        $this->data = $this->record->toArray();
+    }
+    public function form(Form $form): Form
+    {
+        return $form
+            ->statePath('data')
+            ->schema([
+                Components\Section::make('Data Sekolah')
+                    ->schema([
+                        Components\TextInput::make('nama_sekolah')->label('Nama Sekolah'),
+                        Components\TextInput::make('alamat_sekolah')->label('Alamat Sekolah'),
+                        Components\TextInput::make('telepon_sekolah')->label('Telepon Sekolah')->numeric(),
+                        Components\FileUpload::make('logo_sekolah')->label('Logo Sekolah')->image(),
+                    ])->columns(2),
+                Components\Section::make('Pengaturan WhatsApp')
+                    ->schema([
+                        Components\TextInput::make('token_whatsapp')->label('Token WhatsApp'),
+                        Components\Toggle::make('whatsapp_active')->label('Aktifkan WhatsApp'),
+                        Components\Textarea::make('pesan1')->label('Pesan 1')->helperText('Pesan untuk broadcast tagihan')->rows(5)->columnSpanFull(),
+                        Components\Textarea::make('pesan2')->label('Pesan 2')->helperText('Pesan untuk follow up tagihan')->rows(5)->columnSpanFull(),
+                        Components\Textarea::make('pesan3')->label('Pesan 3')->rows(5)->columnSpanFull(),
+                        Components\Placeholder::make('info')
+                        ->content(new \Illuminate\Support\HtmlString('
+                        <p>Gunakan hanya parameter dibawah ini untuk mengisi pesan otomatis&nbsp;</p>
+<p><strong>Untuk Pesan1 dan Pesan 2</strong></p>
+<small><span style="color: #ff0000;">{nama_siswa},&nbsp;{nama_wali},&nbsp;{nama_kelas}</span></small>
+<small><span style="color: #ff0000;">{daftar_biaya},&nbsp;{jenis_keuangan},&nbsp;{tahun},&nbsp;{bulan},&nbsp;{jatuh_tempo},&nbsp;{jumlah_tagihan},&nbsp;{jumlah_diskon},&nbsp;{total_tagihan},&nbsp;{status}</span></small>
+<p>&nbsp;</p>
+<p><strong>Untuk Pesan3</strong></p>
+<small><span style="color: #ff0000;">{nama_siswa},&nbsp;{nama_wali},&nbsp;{nama_kelas}, {total_tagihan_belum_lunas}</span></small>
+                                                ')),
+                    ])->columns(2),
+            ]);
+    }
+    protected function getFormActions(): array 
+    {
+        return [
+            \Filament\Actions\Action::make('save')->submit('save'),
+        ];
+    }
+
+    public function save(): void
+    {
+        try {
+            $this->record->update($this->data);
+        } catch (Halt $exception) {
+            return;
+        }
+ 
+        \Filament\Notifications\Notification::make() 
+            ->success()
+            ->title('Berhasil menyimpan data')
+            ->send(); 
+    }
+}
