@@ -159,7 +159,7 @@ class AlumniResource extends Resource
                 ->visible(fn ($record) => $record->status === 'lunas'),
                 Tables\Actions\Action::make('download-pdf')
                     ->color('success')
-                    ->label('Download Pdf')
+                    ->label('Rincian Tagihan')
                     ->icon('heroicon-o-document-arrow-down')
                     ->url(function($record) {
                         $relativePath = $record->file;
@@ -173,7 +173,14 @@ class AlumniResource extends Resource
                     // Opsional: Sembunyikan tombol jika file path kosong atau file tidak ditemukan
                     ->hidden(fn ($record): bool => empty($record->file) || !Storage::disk('public')->exists($record->file)),
                 // <<< AKHIR TAMBAHAN AKSI >>>
-
+                Tables\Actions\Action::make('riwayat-bayar')
+                ->color('success')
+                ->label('Riwayat Bayar')
+                ->icon('heroicon-o-banknotes')
+                ->url(function($record) {
+                        return url('/admin/kartu-alumni/'.$record->id);
+                    })
+                    ->openUrlInNewTab(),
             ])
             ->headerActions([
                 \Filament\Tables\Actions\ImportAction::make()
