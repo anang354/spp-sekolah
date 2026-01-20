@@ -147,7 +147,11 @@ class PembayaranResource extends Resource
                         ->directory('bukti-bayar')
                         ->downloadable() // <<< Penting: Mengizinkan file didownload dari Filament
                         ->previewable() // <<< Opsional: Memungkinkan pratinjau gambar atau PDF (jika didukung browser)
-                        ->visibility('private')
+                        ->visibility('private'),
+                \Filament\Forms\Components\Toggle::make('is_whatsapp_sent')
+                    ->label('Apakah mengirim notifikasi WhatsApp?')
+                    ->default(true)
+                    ->dehydrated(false),
 
             ]);
     }

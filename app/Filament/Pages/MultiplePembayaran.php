@@ -150,8 +150,23 @@ class MultiplePembayaran extends Page implements HasForms
     public function simpan()
     {
         $nomorBayar = Pembayaran::generateNomorBayar();
+        $getSiswa = \App\Models\Siswa::select('nama', 'nomor_hp')->findOrFail($this->data['siswa_id']);
+        $siswaNama = $getSiswa->nama;
+        $target = $getSiswa->nomor_hp;
+        $tanggalPembayaran = Carbon::parse($this->data['tanggal_pembayaran'])->translatedFormat('d F Y');
+$templatePesan = "
+Nomor Bayar: {$nomorBayar} \n
+Assalamualaikum Bapak/Ibu, \n 
+Pembayaran atas nama {$siswaNama} telah kami terima pada tanggal {$tanggalPembayaran}. \n
+Rincian Pembayaran: \n";
         $data = $this->form->getState();
-        foreach ($data['Tagihan'] as $bayar) {
+        $totalBayar = 0;
+        try {
+            foreach ($data['Tagihan'] as $bayar) {
+            $tagihan = \App\Models\Tagihan::find($bayar['tagihan_id']);
+            $bulanNama = \App\Models\Tagihan::BULAN[$tagihan->periode_bulan];
+            $templatePesan .= "- {$tagihan->daftar_biaya} - {$bulanNama} {$tagihan->periode_tahun} : Rp. " . number_format($bayar['jumlah_dibayar'], 0, ",", ".") . "\n";
+            $totalBayar += $bayar['jumlah_dibayar'];
             Pembayaran::create([
                 'siswa_id' => $data['siswa_id'],
                 'user_id' => auth()->user()->id,
@@ -163,6 +178,44 @@ class MultiplePembayaran extends Page implements HasForms
                 'bukti_bayar' => $data['bukti_bayar'] ?? null,
                 'nomor_bayar' => $nomorBayar,
             ]);
+        }
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Terjadi kesalahan saat menyimpan pembayaran: ' . $e->getMessage())
+                ->danger()
+                ->send();
+            return; 
+        }
+        $templatePesan .= "\n Total Pembayaran: Rp. " . number_format($totalBayar, 0, ",", ".") . "\n
+Terima kasih atas pembayaran Anda. Alhamdulillah Jazakumullahu Khoiro.";
+        $pengaturan = \App\Models\Pengaturan::select('token_whatsapp', 'whatsapp_active')->first();
+        
+        if($pengaturan && $pengaturan->whatsapp_active) {
+            $token = $pengaturan->token_whatsapp;
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://api.fonnte.com/send',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => http_build_query(array(
+                    'target' => $target,
+                    'message' => $templatePesan,
+                )),
+                CURLOPT_HTTPHEADER => array(
+                    "Authorization: $token"
+                ),
+            ));
+            $response = curl_exec($curl);
+            if (curl_errno($curl)) {
+                $error_msg = curl_error($curl);
+                // Log error jika perlu
+            }
+            curl_close($curl);
         }
 
         $this->form->fill([]);

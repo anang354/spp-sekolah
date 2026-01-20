@@ -18,7 +18,7 @@ class ActivityLog extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-8-tooth';
+    protected static ?string $navigationIcon = 'heroicon-o-information-circle';
 
     protected static string $view = 'filament.pages.activity-log';
 
