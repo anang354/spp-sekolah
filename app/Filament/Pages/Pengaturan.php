@@ -21,6 +21,11 @@ class Pengaturan extends Page implements HasForms
 
     protected static string $view = 'filament.pages.pengaturan';
 
+    public static function canAccess() : bool
+    {
+        return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
+    }
+
     public function mount(): void 
     {
         $this->record = \App\Models\Pengaturan::firstOrCreate([]);
@@ -39,14 +44,14 @@ class Pengaturan extends Page implements HasForms
                         Components\TextInput::make('alamat_sekolah')->label('Alamat Sekolah'),
                         Components\TextInput::make('telepon_sekolah')->label('Telepon Sekolah')->numeric(),
                         Components\FileUpload::make('logo_sekolah')->label('Logo Sekolah')->image(),
-                    ])->columns(2),
+                    ])->columns(2)->visible(fn () => auth()->user()->role === 'admin'),
                 Components\Section::make('Pengaturan WhatsApp')
                     ->schema([
-                        Components\TextInput::make('token_whatsapp')->label('Token WhatsApp'),
+                        Components\TextInput::make('token_whatsapp')->label('Token WhatsApp')->readOnly(fn () => auth()->user()->role !== 'admin'),
                         Components\Toggle::make('whatsapp_active')->label('Aktifkan WhatsApp'),
                         Components\Textarea::make('pesan1')->label('Pesan 1')->helperText('Pesan untuk broadcast tagihan')->rows(5)->columnSpanFull(),
                         Components\Textarea::make('pesan2')->label('Pesan 2')->helperText('Pesan untuk follow up tagihan')->rows(5)->columnSpanFull(),
-                        Components\Textarea::make('pesan3')->label('Pesan 3')->rows(5)->columnSpanFull(),
+                        Components\Textarea::make('pesan3')->label('Pesan 3')->rows(5)->helperText('Pesan untuk untuk kirim total tagihan di menu siswa')->columnSpanFull(),
                         Components\Placeholder::make('info')
                         ->content(new \Illuminate\Support\HtmlString('
                         <p>Gunakan hanya parameter dibawah ini untuk mengisi pesan otomatis&nbsp;</p>
@@ -63,7 +68,7 @@ class Pengaturan extends Page implements HasForms
     protected function getFormActions(): array 
     {
         return [
-            \Filament\Actions\Action::make('save')->submit('save'),
+            \Filament\Actions\Action::make('save')->submit('save')->label('Simpan Pengaturan')->color('primary'),
         ];
     }
 

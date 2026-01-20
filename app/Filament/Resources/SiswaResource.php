@@ -204,6 +204,7 @@ class SiswaResource extends Resource
                     GenerateAlumniBulkAction::make()
                     ->visible(fn() => auth()->user()->role === 'admin'),
                     \App\Filament\Actions\Siswas\PesanTagihanAction::make()
+                    ->visible(fn() => auth()->user()->role === 'admin' || auth()->user()->role === 'editor'),
                 ]),
             ]);
     }
