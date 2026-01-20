@@ -9,6 +9,9 @@ class Pengaturan extends Model
 {
     //
     protected $guarded = ['id'];
+    protected $casts = [
+        'logo_sekolah' => 'array',
+    ];
     use LogsActivity;
     protected static $logUnguarded = true;
     protected static $recordEvents = ['updated'];

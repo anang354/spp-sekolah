@@ -4,11 +4,12 @@ namespace App\Filament\Pages;
 
 use Filament\Forms\Form;
 use Filament\Pages\Page;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Components;
 use Filament\Actions\Action;
+use Filament\Forms\Components;
 use Filament\Support\Exceptions\Halt;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Concerns\InteractsWithForms;
 
 class Pengaturan extends Page implements HasForms
 {
@@ -43,7 +44,11 @@ class Pengaturan extends Page implements HasForms
                         Components\TextInput::make('nama_sekolah')->label('Nama Sekolah'),
                         Components\TextInput::make('alamat_sekolah')->label('Alamat Sekolah'),
                         Components\TextInput::make('telepon_sekolah')->label('Telepon Sekolah')->numeric(),
-                        Components\FileUpload::make('logo_sekolah')->label('Logo Sekolah')->image(),
+                        FileUpload::make('logo_sekolah')
+                        ->disk('public')
+                        ->directory('logo-sekolah')
+                        ->image()
+                        ->imageEditor(),
                     ])->columns(2)->visible(fn () => auth()->user()->role === 'admin'),
                 Components\Section::make('Pengaturan WhatsApp')
                     ->schema([
@@ -75,7 +80,9 @@ class Pengaturan extends Page implements HasForms
     public function save(): void
     {
         try {
-            $this->record->update($this->data);
+            $data = $this->form->getState();
+ 
+            $this->record->update($data);
         } catch (Halt $exception) {
             return;
         }
