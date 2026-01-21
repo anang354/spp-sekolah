@@ -98,12 +98,19 @@ class MultiplePembayaran extends Page implements HasForms
                     ->schema([
                         Select::make('tagihan_id')
                             ->label('Tagihan')
+                            ->reactive()
                             ->options(function (callable $get, callable $set, $state) {
                                 $siswaId = $get('../../siswa_id');
                                 if (!$siswaId) return [];
 
+                                // Ambil tagihan yang sudah dipilih di repeater, kecuali yang dipilih di select ini
+                                $selectedTagihanIds = collect($get('../../Tagihan'))->pluck('tagihan_id')->filter(function ($id) use ($state) {
+                                    return $id !== null && $id !== $state; // Exclude null dan yang dipilih di select ini
+                                })->toArray();
+
                                 return \App\Models\Tagihan::where('siswa_id', $siswaId)
                                     ->whereColumn('jumlah_netto', '>', DB::raw('(SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.tagihan_id = tagihans.id)'))
+                                    ->whereNotIn('id', $selectedTagihanIds) // Exclude yang sudah dipilih di item lain
                                     ->get()
                                     ->mapWithKeys(function ($tagihan) {
                                         $bulan = Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F Y');
