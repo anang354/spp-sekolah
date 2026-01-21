@@ -32,12 +32,11 @@ class Pengaturan extends Page implements HasForms
         $this->record = \App\Models\Pengaturan::firstOrCreate([]);
 
         // Isi data dengan atribut record
-        $this->data = $this->record->toArray();
+        $this->form->fill($this->record->attributesToArray());
     }
     public function form(Form $form): Form
     {
         return $form
-            ->statePath('data')
             ->schema([
                 Components\Section::make('Data Sekolah')
                     ->schema([
@@ -48,7 +47,10 @@ class Pengaturan extends Page implements HasForms
                         ->disk('public')
                         ->directory('logo-sekolah')
                         ->image()
-                        ->imageEditor(),
+                        ->imageEditor()
+                        ->getUploadedFileNameForStorageUsing(function ($file) {
+                            return "logo_sekolah." . $file->getClientOriginalExtension();
+                        }),
                     ])->columns(2)->visible(fn () => auth()->user()->role === 'admin'),
                 Components\Section::make('Pengaturan WhatsApp')
                     ->schema([
@@ -68,7 +70,8 @@ class Pengaturan extends Page implements HasForms
 <small><span style="color: #ff0000;">{nama_siswa},&nbsp;{nama_wali},&nbsp;{nama_kelas}, {total_tagihan_belum_lunas}</span></small>
                                                 ')),
                     ])->columns(2),
-            ]);
+            ])
+            ->statePath('data')->model($this->record);
     }
     protected function getFormActions(): array 
     {
