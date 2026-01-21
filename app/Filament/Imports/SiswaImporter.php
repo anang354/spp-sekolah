@@ -16,7 +16,6 @@ class SiswaImporter extends Importer
         return [
             ImportColumn::make('kelas')
                 ->requiredMapping()
-                ->requiredMapping()
                 ->relationship()
                 ->rules(['required']),
             ImportColumn::make('nisn')
@@ -25,10 +24,8 @@ class SiswaImporter extends Importer
                 ->rules(['integer']),
             ImportColumn::make('nama')
                 ->requiredMapping()
-                ->requiredMapping()
                 ->rules(['required', 'max:255']),
             ImportColumn::make('jenis_kelamin')
-                ->requiredMapping()
                 ->requiredMapping()
                 ->rules(['required']),
             ImportColumn::make('nama_wali')
@@ -39,16 +36,13 @@ class SiswaImporter extends Importer
                 ->rules(['max:255']),
             ImportColumn::make('is_boarding')
                 ->requiredMapping()
-                ->requiredMapping()
                 ->boolean()
                 ->rules(['required', 'boolean']),
             ImportColumn::make('is_active')
                 ->requiredMapping()
-                ->requiredMapping()
                 ->boolean()
                 ->rules(['required', 'boolean']),
             ImportColumn::make('alamatSambung')
-                ->requiredMapping()
                 ->requiredMapping()
                 ->relationship()
                 ->rules(['required']),
