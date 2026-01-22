@@ -7,8 +7,10 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -59,6 +61,7 @@ class PembayaranRelationManager extends RelationManager
                         'tunai' => 'success',
                         'transfer' => 'info',
                     }),
+                TextColumn::make('user.name')->label('Petugas'),
                 TextColumn::make('keterangan')
                 ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
@@ -80,7 +83,39 @@ class PembayaranRelationManager extends RelationManager
                 // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('Lihat Struk')
+                ->icon('heroicon-o-document-text')
+                ->color('primary')
+                ->visible(fn ($record) => $record->metode_pembayaran === 'transfer')
+                ->modalHeading('Bukti Pembayaran')
+                ->modalWidth('xl')
+                ->modalContent(function ($record) {
+                    // 1. Cek apakah file benar-benar ada di disk local
+                    if (!Storage::disk('local')->exists($record->bukti_bayar)) {
+                        return new HtmlString('<p class="text-center text-danger-500">File tidak ditemukan di penyimpanan.</p>');
+                    }
+
+                    // 2. Ambil konten file dan ubah jadi Base64
+                    $fileContent = Storage::disk('local')->get($record->bukti_bayar);
+                    $mimeType = Storage::disk('local')->mimeType($record->bukti_bayar);
+                    $base64 = base64_encode($fileContent);
+                    
+                    // 3. Render gambar menggunakan Data URI
+                    return new HtmlString('
+                        <div class="flex justify-center w-full">
+                            <img 
+                                src="data:'. $mimeType .';base64,'. $base64 .'" 
+                                alt="Bukti Bayar" 
+                                class="rounded-lg shadow-md max-w-full max-h-[80vh]" 
+                            />
+                        </div>
+                    ');
+                })->slideOver()
+                ->modalSubmitAction(false)
+                ->modalCancelAction(fn ($action) => $action->label('Tutup'))
+                // Validasi: Sembunyikan tombol jika tidak ada bukti bayar
+                ->hidden(fn ($record) => !$record->bukti_bayar),
+                // Tables\Actions\EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
