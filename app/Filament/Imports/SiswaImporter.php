@@ -19,9 +19,7 @@ class SiswaImporter extends Importer
                 ->relationship()
                 ->rules(['required']),
             ImportColumn::make('nisn')
-                ->requiredMapping()
-                ->numeric()
-                ->rules(['integer']),
+                ->requiredMapping(),
             ImportColumn::make('nama')
                 ->requiredMapping()
                 ->rules(['required', 'max:255']),
@@ -33,7 +31,7 @@ class SiswaImporter extends Importer
                 ->rules(['max:255']),
             ImportColumn::make('nomor_hp')
                 ->requiredMapping()
-                ->rules(['max:255']),
+                ->rules(['max:20']),
             ImportColumn::make('is_boarding')
                 ->requiredMapping()
                 ->boolean()
