@@ -113,8 +113,8 @@ class MultiplePembayaran extends Page implements HasForms
                                     ->whereNotIn('id', $selectedTagihanIds) // Exclude yang sudah dipilih di item lain
                                     ->get()
                                     ->mapWithKeys(function ($tagihan) {
-                                        $bulan = Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F Y');
-                                        $label = "{$tagihan->daftar_biaya} - {$bulan} - Rp. " . number_format($tagihan->sisa_tagihan, 0, ",", ".");
+                                        $bulan = Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F');
+                                        $label = "{$tagihan->daftar_biaya} - {$bulan} {$tagihan->periode_tahun} - Rp. " . number_format($tagihan->sisa_tagihan, 0, ",", ".");
                                         return [$tagihan->id => $label];
                                     });
                             })
