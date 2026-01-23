@@ -97,6 +97,11 @@
             color: #FFF;
             background: #123524;
         }
+        .qrcode {
+            margin-top: 20px;
+            width: 100%;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -261,5 +266,8 @@
         </thead>
     </table>
     <p style="font-style: italic;">Terbilang: {{ \App\Helpers\Terbilang::make((int) $totalTagihan-$totalPembayaran) }}</p>
+    <div class="qrcode">
+        <img src="data:image/svg+xml;base64,{{ $qrcode }}" alt="QR Code"/>
+    </div>
 </body>
 </html>

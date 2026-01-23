@@ -16,9 +16,12 @@ class KartuSppController extends Controller
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $image = 'data:image/'.$type.';base64,'.base64_encode($data);
+        $urlCode = route('verification', ['encrypted_nisn' => \Illuminate\Support\Facades\Crypt::encryptString($siswa['nisn'])]);
+        $qrCode =  base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(100)->generate($urlCode));
         $pdf = Pdf::loadView('templates.kartu-spp',[
             'siswa' => $siswa,
-            'logo' => $image
+            'logo' => $image,
+            'qrcode' => $qrCode
         ]);
         return $pdf->stream();
     }
@@ -34,5 +37,20 @@ class KartuSppController extends Controller
             'logo' => $image
         ]);
         return $pdf->stream();
+    }
+    public function verification($encrypted_nisn)
+    {
+        try{
+            $nisn = \Illuminate\Support\Facades\Crypt::decryptString($encrypted_nisn);
+        
+            $checkSiswa = \App\Models\Siswa::where('nisn', $nisn)->first(); 
+            if (!$checkSiswa) {
+                return abort(404);
+            }
+            return view('verification');
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return abort(404);
+        }
+        
     }
 }
