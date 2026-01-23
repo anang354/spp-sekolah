@@ -21,6 +21,14 @@
             font-weight: 600;
             color: #FFF;
         }
+        @media only screen and (max-width: 600px) {
+            .title {
+                top: 30%;
+            }
+            h1 {
+                font-size: 18pt;
+            }
+        }
  .letter-image {
 	 position: absolute;
 	 top: 50%;
