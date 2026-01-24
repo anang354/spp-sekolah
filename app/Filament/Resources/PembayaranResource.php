@@ -49,6 +49,7 @@ class PembayaranResource extends Resource
                         ->preload()
                         ->live()
                         ->required()
+                        ->disabledOn('edit')
                         ->afterStateUpdated(fn (Forms\Set $set) => $set('tagihan_id', null))
                         ->searchable()
                         ->columnSpan([
@@ -68,8 +69,23 @@ class PembayaranResource extends Resource
                                     return [$tagihan->id => $label];
                                 });
                         })
+                        ->getOptionLabelUsing(function ($value): ?string {
+                            $tagihan = \App\Models\Tagihan::find($value);
+
+                            if (! $tagihan) {
+                                return null;
+                            }
+
+                            // Copy-paste formatting label yang sama seperti di atas
+                            $bulan = \Carbon\Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F');
+                            // Catatan: sisa_tagihan mungkin perlu dicek aksesornnya di model Tagihan
+                            $sisa = number_format($tagihan->sisa_tagihan, 0, ",", ".");
+                            
+                            return "{$tagihan->daftar_biaya} {$bulan} {$tagihan->periode_tahun} - Rp.{$sisa}";
+                        })
                         ->reactive()
                         ->searchable()
+                        ->disabledOn('edit')
                         ->required()
                         ->columnSpan([
                             'sm' => 2,
@@ -127,6 +143,7 @@ class PembayaranResource extends Resource
                                     $set('terbilang', \App\Helpers\Terbilang::make((int) $state));
                                 })
                             ->required()
+                            ->disabledOn('edit')
                             ->columnSpan([
                                 'sm' => 2,
                                 'xl' => 2,
@@ -215,7 +232,7 @@ class PembayaranResource extends Resource
                     }),
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn()=>  auth()->user()->role === 'admin'),
             ])
