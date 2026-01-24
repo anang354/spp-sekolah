@@ -37,7 +37,7 @@ class PembayaranPolicy
      */
     public function update(User $user, Pembayaran $pembayaran): bool
     {
-        return $user->isAdmin() || $user->isEditor();
+        return $user->isAdmin();
     }
 
     /**
