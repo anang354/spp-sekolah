@@ -16,13 +16,13 @@ class Pembayaran extends Model
     {
         $bulan = Carbon::now()->format('m');
         $tahun = Carbon::now()->format('Y');
-        $count = self::whereMonth('created_at', $bulan)
-                ->whereYear('created_at', $tahun)
-                ->count() + 1;
+        // $count = self::whereMonth('created_at', $bulan)
+        //         ->whereYear('created_at', $tahun)
+        //         ->count() + 1;
+        $number = random_int(0, 999999); 
+        $nomorBayar = str_pad($number, 6, '0', STR_PAD_LEFT);
 
-        $urutan = str_pad($count, 6, '0', STR_PAD_LEFT);
-
-        return "BLBS/{$bulan}/{$tahun}/{$urutan}";
+        return "BLBS/{$bulan}/{$tahun}/{$nomorBayar}";
     }
 
     protected $guarded = ['id'];
