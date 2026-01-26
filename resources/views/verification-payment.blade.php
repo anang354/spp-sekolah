@@ -9,8 +9,8 @@
 </head>
 <body class="bg-white min-h-screen flex flex-col items-center justify-center">
      <div>
-        <img src="{{ asset('images/logo-sma.jpg') }}" alt="Logo Sekolah" class="h-32 mx-auto mb-4">
-        <p class="text-gray-400 font-medium text-xl pb-4">Yayasan Budi Luhur Boarding School Batam</p>
+        <img src="{{ asset('images/logo-sekolah.jpg') }}" alt="Logo Sekolah" class="h-32 mx-auto mb-4">
+        <p class="text-gray-400 font-medium text-xl pb-4 text-center">Yayasan Budi Luhur Boarding School Batam</p>
         <p class="text-gray-500 text-sm pb-4 text-center">Sistem Sumbangan Pembinaan Pendidikan </p>
     </div>
     <div class="max-w-md w-full bg-green-50 rounded-lg text-green-700 inset-ring inset-ring-green-600/20 p-6">
