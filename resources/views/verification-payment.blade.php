@@ -13,7 +13,7 @@
         <p class="text-gray-400 font-medium text-xl pb-4 text-center">Yayasan Budi Luhur Boarding School Batam</p>
         <p class="text-gray-500 text-sm pb-4 text-center">Sistem Sumbangan Pembinaan Pendidikan </p>
     </div>
-    <div class="max-w-md w-full bg-green-50 rounded-lg text-green-700 inset-ring inset-ring-green-600/20 p-6">
+    <div class="max-w-md text-sm lg:text-base w-full bg-green-50 rounded-lg text-green-700 inset-ring inset-ring-green-600/20 p-6">
         <div class="w-full flex flex-row mb-6 gap-4">
             <div>
                 <p class="mb-2">Tanggal</p>

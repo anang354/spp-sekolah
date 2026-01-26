@@ -206,6 +206,15 @@ class PembayaranResource extends Resource
                         'tunai' => 'success',
                         'transfer' => 'info',
                     }),
+                    TextColumn::make('tagihan.jenis_keuangan') // Notasi dot untuk akses relasi
+                    ->label('Keuangan')
+                    ->badge() // Opsional: Agar tampil seperti label warna
+                    ->color(fn (string $state): string => match ($state) {
+                        'pondok' => 'primary',
+                        'sekolah' => 'success',
+                        default => 'gray',
+                    })
+                    ->sortable(),
                 TextColumn::make('user.name')
                     ->label('Operator')
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -220,6 +229,29 @@ class PembayaranResource extends Resource
                         'tunai' => 'Tunai',
                         'transfer' => 'Transfer',
                     ]),
+                SelectFilter::make('jenis_keuangan')
+                ->label('Jenis Keuangan')
+                // 1. Tentukan Pilihan (Options)
+                // Bisa manual array seperti ini:
+                ->options([
+                    'pondok' => 'Pondok',
+                    'sekolah' => 'Sekolah',
+                ])
+                // ATAU ambil unik dari database (agar dinamis):
+                // ->options(fn() => \App\Models\Tagihan::distinct()->pluck('jenis_keuangan', 'jenis_keuangan')->toArray())
+
+                // 2. Logika Query ke Tabel Relasi
+                ->query(function (Builder $query, array $data) {
+                    // Jika user tidak memilih apa-apa, jangan lakukan filter
+                    if (empty($data['value'])) {
+                        return $query;
+                    }
+
+                    // Gunakan whereHas untuk menembus ke tabel 'tagihan'
+                    return $query->whereHas('tagihan', function (Builder $query) use ($data) {
+                        $query->where('jenis_keuangan', $data['value']);
+                    });
+                }),
                  Filter::make('Tanggal Pembayaran')
                     ->form([
                         DatePicker::make('tanggal_mulai')->label('Dari'),
