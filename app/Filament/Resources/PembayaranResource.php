@@ -235,6 +235,12 @@ class PembayaranResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn()=>  auth()->user()->role === 'admin'),
+                Tables\Actions\Action::make('kwitansi')
+                    ->label('Kwitansi')
+                    ->icon('heroicon-o-printer')
+                    ->url(function($record) {
+                        return url('/admin/kwitansi-pembayaran/'.str_replace('/', '-', $record->nomor_bayar));
+                    })->openUrlInNewTab()->visible(fn()=>  auth()->user()->role === 'admin' || auth()->user()->role === 'editor'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
