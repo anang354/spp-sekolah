@@ -150,89 +150,157 @@ class MultiplePembayaran extends Page implements HasForms
     protected function getFormActions(): array
     {
         return [
-            Action::make('save')->submit('save')
-                ->label('Buat Pembayaran')->icon('heroicon-o-plus'),
+            // Tombol 1: Buat (Simpan & Redirect)
+            Action::make('create')
+                ->label('Buat Pembayaran')
+                ->icon('heroicon-m-check')
+                ->submit('create'), // Memanggil function create()
+
+            // Tombol 2: Buat & Buat Lainnya (Simpan & Reset Form)
+            Action::make('createAnother')
+                ->label('Buat & Buat Lainnya')
+                ->icon('heroicon-m-plus')
+                ->color('gray')
+                ->action('createAnother'), // Memanggil function createAnother()
+
+            // Tombol 3: Batal (Kembali ke Index)
+            Action::make('cancel')
+                ->label('Batal')
+                ->color('gray')
+                ->url(function () {
+                    // Arahkan kembali ke resource index (sesuaikan route Anda)
+                    return \App\Filament\Resources\PembayaranResource::getUrl('index');
+                    // Atau jika hardcode: return '/admin/pembayarans';
+                }),
         ];
     }
-    public function simpan()
-    {
-        $nomorBayar = Pembayaran::generateNomorBayar();
-        $getSiswa = \App\Models\Siswa::select('nama', 'nomor_hp')->findOrFail($this->data['siswa_id']);
-        $siswaNama = $getSiswa->nama;
-        $target = $getSiswa->nomor_hp;
-        $tanggalPembayaran = Carbon::parse($this->data['tanggal_pembayaran'])->translatedFormat('d F Y');
-$templatePesan = "
+    
+    // 1. Fungsi Utama (Logika Bisnis) - Private agar tidak bisa dipanggil langsung oleh tombol
+private function processPayment()
+{
+    $nomorBayar = Pembayaran::generateNomorBayar();
+    $data = $this->form->getState(); // Validasi berjalan di sini
+    
+    $getSiswa = \App\Models\Siswa::select('nama', 'nomor_hp')->findOrFail($data['siswa_id']);
+    $siswaNama = $getSiswa->nama;
+    $target = $getSiswa->nomor_hp;
+    $tanggalPembayaran = Carbon::parse($data['tanggal_pembayaran'])->translatedFormat('d F Y');
+
+    $templatePesan = "
 Nomor Bayar: {$nomorBayar} \n
 Assalamualaikum Bapak/Ibu, \n 
 Pembayaran atas nama {$siswaNama} telah kami terima pada tanggal {$tanggalPembayaran}. \n
 Rincian Pembayaran: \n";
-        $data = $this->form->getState();
-        $totalBayar = 0;
-        try {
-            foreach ($data['Tagihan'] as $bayar) {
+
+    $totalBayar = 0;
+
+    DB::beginTransaction(); // Best practice: Gunakan Transaction
+    try {
+        foreach ($data['Tagihan'] as $bayar) {
             $tagihan = \App\Models\Tagihan::find($bayar['tagihan_id']);
-            $bulanNama = \App\Models\Tagihan::BULAN[$tagihan->periode_bulan];
+            $bulanNama = \App\Models\Tagihan::BULAN[$tagihan->periode_bulan] ?? '-'; // Handle jika key tidak ada
             $templatePesan .= "- {$tagihan->daftar_biaya} - {$bulanNama} {$tagihan->periode_tahun} : Rp. " . number_format($bayar['jumlah_dibayar'], 0, ",", ".") . "\n";
             $totalBayar += $bayar['jumlah_dibayar'];
+            
             Pembayaran::create([
                 'siswa_id' => $data['siswa_id'],
                 'user_id' => auth()->user()->id,
                 'tagihan_id' => $bayar['tagihan_id'],
                 'jumlah_dibayar' => $bayar['jumlah_dibayar'],
                 'tanggal_pembayaran' => $data['tanggal_pembayaran'],
-                'metode_pembayaran' => $data['metode_pembayaran'], // atau ambil dari input tambahan
+                'metode_pembayaran' => $data['metode_pembayaran'],
                 'keterangan' => $data['keterangan'] ?? null,
                 'bukti_bayar' => $data['bukti_bayar'] ?? null,
                 'nomor_bayar' => $nomorBayar,
             ]);
         }
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Terjadi kesalahan saat menyimpan pembayaran: ' . $e->getMessage())
-                ->danger()
-                ->send();
-            return; 
-        }
-        $templatePesan .= "\n Total Pembayaran: Rp. " . number_format($totalBayar, 0, ",", ".") . "\n
-Terima kasih atas pembayaran Anda. Alhamdulillah Jazakumullahu Khoiro.";
-        $pengaturan = \App\Models\Pengaturan::select('token_whatsapp', 'whatsapp_active')->first();
         
-        if($pengaturan && $pengaturan->whatsapp_active) {
-            $token = $pengaturan->token_whatsapp;
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://api.fonnte.com/send',
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'POST',
-                CURLOPT_POSTFIELDS => http_build_query(array(
-                    'target' => $target,
-                    'message' => $templatePesan,
-                )),
-                CURLOPT_HTTPHEADER => array(
-                    "Authorization: $token"
-                ),
-            ));
-            $response = curl_exec($curl);
-            if (curl_errno($curl)) {
-                $error_msg = curl_error($curl);
-                // Log error jika perlu
-            }
-            curl_close($curl);
-        }
+        DB::commit(); // Simpan jika semua loop berhasil
 
-        $this->form->fill([]);
-        Notification::make('')
-            ->title('Pembayaran Massal Berhasil')
-            ->success()
+    } catch (\Exception $e) {
+        DB::rollBack(); // Batalkan semua jika ada error
+        
+        Notification::make()
+            ->title('Terjadi kesalahan: ' . $e->getMessage())
+            ->danger()
             ->send();
-        $this->redirect('/admin/pembayarans');
-
+            
+        // Throw error agar function pemanggil tahu kalau ini gagal
+        throw $e; 
     }
+
+    // --- LOGIKA WHATSAPP ---
+    $templatePesan .= "\n Total Pembayaran: Rp. " . number_format($totalBayar, 0, ",", ".") . "\n
+Terima kasih atas pembayaran Anda. Alhamdulillah Jazakumullahu Khoiro.";
+    
+    $pengaturan = \App\Models\Pengaturan::select('token_whatsapp', 'whatsapp_active')->first();
+    
+    if($pengaturan && $pengaturan->whatsapp_active) {
+        // ... (Kode Curl Whatsapp Anda Tetap Sama Disini) ...
+        // Saya persingkat untuk kejelasan jawaban
+        $this->sendWhatsapp($target, $templatePesan, $pengaturan->token_whatsapp);
+    }
+
+    Notification::make()
+        ->title('Pembayaran Massal Berhasil')
+        ->success()
+        ->send();
+}
+
+// 2. Fungsi untuk Tombol "Buat"
+public function create()
+{
+    try {
+        $this->processPayment();
+        // Redirect setelah sukses
+        $this->redirect('/admin/pembayarans'); 
+    } catch (\Exception $e) {
+        // Error sudah dihandle di processPayment, biarkan form tetap terbuka
+    }
+}
+
+// 3. Fungsi untuk Tombol "Buat & Buat Lainnya"
+public function createAnother()
+{
+    try {
+        $this->processPayment();
+        
+        // Reset form agar kosong kembali
+        $this->form->fill([
+            'tanggal_pembayaran' => now(), // Set default value lagi jika perlu
+            'metode_pembayaran' => null, // Atau default value
+        ]);
+        
+        $this->redirect('/admin/multiple-pembayaran'); 
+        
+    } catch (\Exception $e) {
+        // Error handling
+    }
+}
+
+// Helper untuk merapikan kode (Opsional)
+private function sendWhatsapp($target, $message, $token) {
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://api.fonnte.com/send',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS => http_build_query(array(
+            'target' => $target,
+            'message' => $message,
+        )),
+        CURLOPT_HTTPHEADER => array(
+            "Authorization: $token"
+        ),
+    ));
+    $response = curl_exec($curl);
+    curl_close($curl);
+}
 
 
 }
