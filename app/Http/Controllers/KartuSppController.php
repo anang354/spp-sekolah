@@ -23,7 +23,8 @@ class KartuSppController extends Controller
             'logo' => $image,
             'qrcode' => $qrCode
         ]);
-        return $pdf->stream();
+        $namaFile = 'Kartu-SPP-'.$siswa['nama'].'.pdf';
+        return $pdf->stream($namaFile);
     }
     public function alumni(Request $request)
     {
