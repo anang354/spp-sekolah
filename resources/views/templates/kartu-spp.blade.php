@@ -232,7 +232,7 @@
                 <td> {{$itemTagihan->daftar_biaya}} {{ \App\Models\Tagihan::BULAN[$itemTagihan->periode_bulan].' '.$itemTagihan->periode_tahun }}</td>
                 <td>{{ number_format($pembayaran['jumlah_dibayar'], 0, '', '.') }}</td>
                 <td>{{ $pembayaran['metode_pembayaran'] }}</td>
-                <td>{{ \App\Models\User::find($pembayaran['user_id'])->value('name') }}</td>
+                <td>{{ \App\Models\User::where('id', $pembayaran['user_id'])->first()->value('name') }}</td>
             </tr>
             @endforeach
             <tr class="summarize">
