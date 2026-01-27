@@ -14,6 +14,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/kartu-alumni/{id}', [KartuSppController::class, 'alumni'])->name('kartu-alumni');
 
     Route::get('/admin/kwitansi-pembayaran/{nomor_bayar}', [KwitansiPembayaranController::class, 'index'])->name('kwitansi-pembayaran-siswa');
+    Route::get('/admin/kwitansi-pembayaran-alumni/{id}', [KwitansiPembayaranController::class, 'alumni'])->name('kwitansi-pembayaran-alumni');
     });
 Route::get('/verification/{encrypted_nisn}', [KartuSppController::class, 'verification'])->name('verification');
 Route::get('/verification-payment/{encrypted_nomor}', [KwitansiPembayaranController::class, 'verification'])->name('verification-payment');
+Route::get('/verification-payment-alumni/{encrypted_nomor}', [KwitansiPembayaranController::class, 'verificationAlumni'])->name('verification-payment-alumni');

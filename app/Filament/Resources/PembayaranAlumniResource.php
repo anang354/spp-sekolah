@@ -182,6 +182,11 @@ class PembayaranAlumniResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('kwitansi')
+                    ->label('Kwitansi')
+                    ->icon('heroicon-o-document-text')
+                    ->url(fn (PembayaranAlumni $record) => route('kwitansi-pembayaran-alumni', ['id' => $record->id]))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
