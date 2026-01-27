@@ -165,7 +165,7 @@
 
     <p style="font-style: italic;">Terbilang: {{ \App\Helpers\Terbilang::make((int) $totalPembayaran) }}</p>
     <div class="qrcode">
-        <p>Dicetak pada {{ date('d-m-Y H:i:s') }}</p>
+        <p>Dicetak pada {{ now()->format('d-m-Y H:i:s') }}</p>
         <img src="data:image/svg+xml;base64,{{ $qrcode }}" alt="QR Code"/>
         <p>{{ $pembayaran[0]['user']['name'] }}</p>
     </div>
