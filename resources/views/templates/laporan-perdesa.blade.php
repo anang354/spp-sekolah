@@ -58,7 +58,7 @@
     @foreach($groupedData as $namaDesa => $siswas)
     
     <div class="desa-block">
-        <h3 style="margin-bottom: 5px; text-transform: uppercase;">DESA: {{ $namaDesa }}</h3>
+        <h3 style="margin-bottom: 5px; text-transform: uppercase;">DESA: {{ $namaDesa }} / {{ $siswas->first()->alamatSambung->daerah }}</h3>
 
         <table>
             <thead>
