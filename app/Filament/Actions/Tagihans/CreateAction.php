@@ -9,6 +9,7 @@ use App\Models\Siswa;
 use App\Models\Tagihan;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Illuminate\Support\Facades\DB;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
@@ -50,6 +51,7 @@ class CreateAction
                 ->whereHas('kelas', function (Builder $query) use ($jenjang, $kelasIds) {
                     $query->where('jenjang', $jenjang)->whereIn('id', $kelasIds);
                 })->get();
+                DB::beginTransaction();
                 try {
                     $hitung = 0;
                     foreach($getSiswa as $siswa) {
@@ -125,6 +127,7 @@ class CreateAction
                             }
                         }
                     }
+                    DB::commit();
                     $notif = 'Berhasil membuat tagihan untuk '.$hitung.' siswa';
                     Notification::make()
                     ->title('Berhasil!')
@@ -132,6 +135,7 @@ class CreateAction
                     ->success()
                     ->send();
                 } catch(\Exception $e) {
+                    DB::rollBack();
                     Notification::make()
                     ->title('Gagal!')
                     ->body('Gagal membuat Tagihan')

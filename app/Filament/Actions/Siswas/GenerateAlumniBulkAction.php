@@ -7,6 +7,7 @@ use Filament\Tables\Actions\BulkAction;
 use Illuminate\Support\Facades\Storage;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class GenerateAlumniBulkAction
 {
@@ -67,6 +68,7 @@ class GenerateAlumniBulkAction
 
                     $sisaPondok = max($totalTagihanPondok - $totalDibayarPondok, 0);
                     // Simpan ke tabel alumnis
+                    DB::beginTransaction();
                     try {
                         if($sisaSekolah !== 0) {
                             \App\Models\Alumni::create([
@@ -82,6 +84,7 @@ class GenerateAlumniBulkAction
                                 'alamat' => $siswa->alamatSambung->kelompok.'/'.$siswa->alamatSambung->desa.'/'.$siswa->alamatSambung->daerah,
                                 'jenis_keuangan' => 'sekolah'
                             ]);
+                            DB::commit();
                         }
                         if($sisaPondok !== 0)
                         {
@@ -98,10 +101,10 @@ class GenerateAlumniBulkAction
                                 'alamat' => $siswa->alamatSambung->kelompok.'/'.$siswa->alamatSambung->desa.'/'.$siswa->alamatSambung->daerah,
                                 'jenis_keuangan' => 'pondok'
                             ]);
+                        DB::commit();
                         }
-                        
                         $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas', 'alamatSambung'])->first()->toArray();
-                        $path = public_path().'/images/logo-sekolah.jpg';
+                        $path = public_path().'/images/logo-sma.jpg';
                         $type = pathinfo($path, PATHINFO_EXTENSION);
                         $data = file_get_contents($path);
                         $image = 'data:image/'.$type.';base64,'.base64_encode($data);
@@ -110,6 +113,7 @@ class GenerateAlumniBulkAction
                             'logo' => $image
                         ])->save(Storage::disk('public')->path($filePath));
                     } catch(\Exception $e) {
+                        DB::rollBack();
                         Notification::make()
                             ->title('Generate Alumni Gagal!')
                             ->danger()

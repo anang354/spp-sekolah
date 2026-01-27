@@ -28,7 +28,7 @@ class KartuSppController extends Controller
     public function alumni(Request $request)
     {
         $alumni = \App\Models\Alumni::where('id',$request->id)->with(['pembayaranAlumni'])->first()->toArray();
-        $path = public_path().'/images/logo-sekolah.jpg';
+        $path = public_path().'/images/logo-sma.jpg';
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $image = 'data:image/'.$type.';base64,'.base64_encode($data);
