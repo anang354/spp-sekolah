@@ -20,31 +20,27 @@ class LaporanController extends Controller
         // Asumsi: di tabel 'alamats' ada kolom 'nama_desa'
         $groupedData = $siswas->groupBy(function ($siswa) {
             return $siswa->alamatSambung->desa ?? 'Tanpa Desa'; 
-        });
+        })->sortKeys();
 
         // 3. Hitung Total Tunggakan Per Desa (Pre-calculation)
         // Kita siapkan array ringkasan agar di Blade tinggal tampil saja
-        $summary = [];
+        $groupedData = $groupedData->map(function ($listSiswa) {
         
-        foreach ($groupedData as $desa => $listSiswa) {
-            $totalTunggakanDesa = 0;
-            
-            foreach ($listSiswa as $siswa) {
-                // Hitung sisa tagihan per siswa
-                // Logic: Jumlah Netto Tagihan - Total Yang Sudah Dibayar
-                $sisaSiswa = $siswa->tagihans->sum(function ($tagihan) {
-                    $sudahDibayar = $tagihan->pembayaran->sum('jumlah_dibayar');
-                    return $tagihan->jumlah_netto - $sudahDibayar;
-                });
-                
-                $totalTunggakanDesa += $sisaSiswa;
-                
-                // Simpan sisa per siswa ke object siswa sementara (utk ditampilkan di view)
-                $siswa->sisa_tagihan_total = $sisaSiswa;
-            }
-            
-            $summary[$desa] = $totalTunggakanDesa;
-        }
+        // A. Hitung dulu total hutang setiap siswa dalam grup ini
+        $listSiswa->each(function ($siswa) {
+            $siswa->sisa_tagihan_total = $siswa->tagihans->sum(function ($tagihan) {
+                return $tagihan->jumlah_netto - $tagihan->pembayaran->sum('jumlah_dibayar');
+            });
+        });
+
+        // B. Urutkan siswa berdasarkan 'sisa_tagihan_total' dari Besar ke Kecil
+        return $listSiswa->sortByDesc('sisa_tagihan_total'); 
+    });
+
+    // 4. Hitung Total Summary Per Desa (Untuk Footer Tabel)
+    $summary = $groupedData->map(function ($group) {
+        return $group->sum('sisa_tagihan_total');
+    });
     //dd($groupedData);
          $path = public_path().'/images/logo-sma.jpg';
         $type = pathinfo($path, PATHINFO_EXTENSION);
