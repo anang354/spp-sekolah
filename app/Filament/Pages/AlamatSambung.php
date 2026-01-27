@@ -92,6 +92,12 @@ class AlamatSambung extends Page implements HasForms, HasTable
                    Sum::make(),
                 ]),
             ])
+            ->headerActions([
+                \Filament\Tables\Actions\Action::make('Laporan Tagihan Per Desa')
+                    ->url(route('laporan-alamat-sambung'))
+                    ->icon('heroicon-o-document-text')
+                    ->openUrlInNewTab(),
+            ])
             ->actions([
                 \Filament\Tables\Actions\EditAction::make()
                     ->form([

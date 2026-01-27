@@ -180,20 +180,33 @@
                 @endphp
 
                 @foreach ($tagihanGroup as $index => $tagihan)
-                    <tr style="{{$tagihan['status'] === 'lunas' ? 'background: #63a35c;' : ''}}">
-                        {{-- 2. Kolom Periode hanya ditampilkan pada baris pertama --}}
-                        @if ($index === 0)
+                    {{-- <tr style="{{$tagihan['status'] === 'lunas' ? 'background: #63a35c;' : ''}}"> --}}
+                        
+                        {{-- @if ($index === 0)
                             <td rowspan="{{ $rowspan }}">
                                 {{ \App\Models\Tagihan::BULAN[$bulan] }} {{ $tahun }}
                             </td>
-                        @endif
+                        @endif --}}
 
+                        {{-- <td>{{ $tagihan['daftar_biaya'] }}</td>
+                        <td>{{ number_format($tagihan['jumlah_tagihan'], 0, '', '.') }}</td>
+                        <td>{{ number_format($tagihan['jumlah_diskon'], 0, '', '.') }}</td>
+                        <td>{{ number_format($tagihan['jumlah_netto'], 0, '', '.') }}</td>
+                        <td>{{ $tagihan['status'] }}</td>
+                    </tr> --}}
+                    {{-- Kode diatas memiliki bug untuk halaman kedua saat memulai baris pertama --}}
+                    <tr style="{{$tagihan['status'] === 'lunas' ? 'background: #63a35c;' : ''}}">
+                        <td>
+                            {{-- Tetap tampilkan di setiap baris agar tabel tidak bergeser --}}
+                            {{ \App\Models\Tagihan::BULAN[$bulan] }} {{ $tahun }}
+                        </td>
                         <td>{{ $tagihan['daftar_biaya'] }}</td>
                         <td>{{ number_format($tagihan['jumlah_tagihan'], 0, '', '.') }}</td>
                         <td>{{ number_format($tagihan['jumlah_diskon'], 0, '', '.') }}</td>
                         <td>{{ number_format($tagihan['jumlah_netto'], 0, '', '.') }}</td>
                         <td>{{ $tagihan['status'] }}</td>
                     </tr>
+                    
                     @php
                         $totalTagihan += $tagihan['jumlah_netto'];
                     @endphp
