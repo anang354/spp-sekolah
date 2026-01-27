@@ -37,7 +37,8 @@ class KartuSppController extends Controller
             'alumni' => $alumni,
             'logo' => $image
         ]);
-        return $pdf->stream();
+        $namaFile = 'Kartu-Alumni-'.$alumni['nama'].'.pdf';
+        return $pdf->stream($namaFile);
     }
     public function verification($encrypted_nisn)
     {

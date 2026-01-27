@@ -22,7 +22,9 @@ class KwitansiPembayaranController extends Controller
             'logo' => $image,
             'qrcode' => $qrCode
         ]);
-        return $pdf->stream();
+
+        $namaFile = $request->nomor_bayar.'_'.$pembayaran[0]['siswa']['nama'].'.pdf';
+        return $pdf->stream($namaFile);
     }
     public function verification($encrypted_nomor)
     {
@@ -52,7 +54,8 @@ class KwitansiPembayaranController extends Controller
             'logo' => $image,
             'qrcode' => $qrCode
         ]);
-        return $pdf->stream();
+        $namaFile = 'Kwitansi-Pembayaran-Alumni-'.$pembayaran->alumni->nama.'.pdf';
+        return $pdf->stream($namaFile);
     }
     public function verificationAlumni($encrypted_nomor)
     {
