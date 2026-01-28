@@ -24,6 +24,7 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PembayaranResource\Pages;
+use App\Filament\Actions\Pembayarans\DownloadPembayaranAction;
 use App\Filament\Resources\PembayaranResource\RelationManagers;
 
 class PembayaranResource extends Resource
@@ -278,6 +279,8 @@ class PembayaranResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     // Tables\Actions\DeleteBulkAction::make()
                     //     ->visible(fn()=>  auth()->user()->role === 'admin'),
+                    DownloadPembayaranAction::make()
+                    ->visible(fn()=>  auth()->user()->role === 'admin' || auth()->user()->role === 'editor'),
                 ]),
             ]);
     }
