@@ -53,7 +53,45 @@
         <h2>Laporan Rekapitulasi Tunggakan Siswa Per Desa</h2>
         <p>Tanggal Cetak: {{ $tanggalCetak }} oleh {{ auth()->user()->name }}</p>
     </div>
-
+    <table>
+        <thead>
+            <tr style="background-color: #333; color: white;">
+                <th>No</th>
+                <th>Nama Desa</th>
+                <th>Nama Daerah</th>
+                <th>Jumlah Siswa</th>
+                <th>Jumlah Tagihan</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $totalSemuaSiswa = 0;
+            @endphp
+            @foreach($summary as $namaDesa => $totalTunggakan)
+            @php
+                $jumlahSiswa  = 0;
+                foreach ($groupedData[$namaDesa] as $key => $value) {
+                    if($value->sisa_tagihan_total > 0) {
+                        $jumlahSiswa++;
+                    }
+                }
+                $totalSemuaSiswa += $jumlahSiswa;
+            @endphp
+            <tr>
+                <td class="text-center">{{ $loop->iteration }}</td>
+                <td>{{ strtoupper($namaDesa) }}</td>
+                <td>{{ $groupedData[$namaDesa]->first()->alamatSambung->daerah }}</td>
+                <td class="text-center">{{ $jumlahSiswa }}</td>
+                <td class="text-right">Rp {{ number_format($totalTunggakan, 0, ',', '.') }}</td>
+            </tr>
+            @endforeach
+            <tr style="font-size: 10pt; background-color: #f5e870;">
+                <td colspan="3" class="text-right"><strong>TOTAL KESELURUHAN</strong></td>
+                <td class="text-center"><strong>{{ $totalSemuaSiswa }}</strong></td>
+                <td class="text-right"><strong>Rp {{ number_format($summary->sum(), 0, ',', '.') }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
     {{-- LOOP UTAMA: GROUP BY DESA --}}
     @foreach($groupedData as $namaDesa => $siswas)
     
