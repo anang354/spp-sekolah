@@ -100,20 +100,27 @@ class AlamatSambung extends Page implements HasForms, HasTable
             ])
             ->actions([
                 \Filament\Tables\Actions\EditAction::make()
-                    ->form([
-                        TextInput::make('kelompok'),
-                        TextInput::make('desa'),
-                        TextInput::make('daerah'),
-                    ])
-                    ->action(function($record){
-                        $record->kelompok = strtoupper($record->kelompok);
-                        $record->desa = strtoupper($record->desa);
-                        $record->daerah = strtoupper($record->daerah);
-                        $record->save();
-                    })
-                    ->visible(function() {
-                        return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
-                    }),
+                ->slideOver()
+                ->form([
+                    TextInput::make('kelompok'),
+                    TextInput::make('desa'),
+                    TextInput::make('daerah'),
+                ])
+                // Gunakan argumen $data untuk mengambil inputan form
+                ->action(function ($record, array $data): void {
+                    $record->update([
+                        'kelompok' => strtoupper($data['kelompok']),
+                        'desa' => strtoupper($data['desa']),
+                        'daerah' => strtoupper($data['daerah']),
+                    ]);
+                    
+                    // Opsional: Tambahkan notifikasi sukses agar user tahu data tersimpan
+                    \Filament\Notifications\Notification::make()
+                        ->title('Data berhasil diperbarui')
+                        ->success()
+                        ->send();
+                })
+                ->visible(fn() => in_array(auth()->user()->role, ['admin', 'editor'])),
                 \Filament\Tables\Actions\DeleteAction::make()
                     ->visible(function() {
                         return auth()->user()->role === 'admin';
