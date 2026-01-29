@@ -163,7 +163,6 @@ class SiswaResource extends Resource
             ])
             ->filters([
                 \Filament\Tables\Filters\TrashedFilter::make(),
-                TernaryFilter::make('is_active')->label('Siswa Aktif')->default(true),
                 SelectFilter::make('jenis_kelamin')->options([
                     'laki-laki' => 'Laki-laki',
                     'perempuan' => 'Perempuan'
@@ -176,13 +175,14 @@ class SiswaResource extends Resource
                 ->multiple()
                 ->preload()
                 ->relationship('kelas','jenjang'),
-                TernaryFilter::make('is_boarding')->label('Siswa Boarding')
+                TernaryFilter::make('is_boarding')->label('Siswa Boarding'),
+                TernaryFilter::make('is_active')->label('Siswa Aktif'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->modalHeading('Hapus Data Siswa') // Judul modal konfirmasi
-                    ->modalDescription('Apakah Anda yakin ingin menghapus data siswa ini? Tindakan ini tidak dapat dibatalkan. Semua data terkait seperti Tagihan dan Pembayaran juga akan dihapus.') // Pesan konfirmasi kustom
+                    ->modalDescription('Tindakan ini adalah softdelete anda dapat memulihkan datanya kembali nanti dan tidak merubah hitungan pembayaran.') // Pesan konfirmasi kustom
                     ->modalSubmitActionLabel('Ya, Hapus Siswa') // Label tombol konfirmasi
                     ->modalCancelActionLabel('Batal Hapus'),
                 Tables\Actions\Action::make('lihat-pdf')
