@@ -119,8 +119,8 @@ class SiswaResource extends Resource
             ->paginated([10, 25, 50, 100, 'all'])
             ->defaultPaginationPageOption(25)
             ->columns([
-                TextColumn::make('nisn')->searchable(),
-                TextColumn::make('nama')->searchable(),
+                TextColumn::make('nisn')->searchable()->copyable(),
+                TextColumn::make('nama')->searchable()->sortable(),
                 TextColumn::make('jenis_kelamin')
                    ->formatStateUsing(fn ($state) => ucwords($state)),
                 TextColumn::make('kelas.nama_kelas'),
