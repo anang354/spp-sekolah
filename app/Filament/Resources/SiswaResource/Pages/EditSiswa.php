@@ -16,4 +16,20 @@ class EditSiswa extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    // Menimpa metode resolveRecord untuk mengizinkan pengambilan data yang di-soft delete
+    protected function resolveRecord($key): \Illuminate\Database\Eloquent\Model
+    {
+        // Mengambil record termasuk yang sudah di-soft delete
+        $record = static::getResource()::getEloquentQuery()
+            ->withTrashed() // Pastikan menyertakan data terhapus
+            ->where('id', $key) // Langsung gunakan 'id' sebagai primary key
+            ->first();
+
+        if (! $record) {
+            throw (new \Illuminate\Database\Eloquent\ModelNotFoundException)
+                ->setModel(static::getResource()::getModel(), [$key]);
+        }
+
+        return $record;
+    }
 }

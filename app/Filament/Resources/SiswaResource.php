@@ -162,6 +162,7 @@ class SiswaResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                \Filament\Tables\Filters\TrashedFilter::make(),
                 TernaryFilter::make('is_active')->label('Siswa Aktif')->default(true),
                 SelectFilter::make('jenis_kelamin')->options([
                     'laki-laki' => 'Laki-laki',
@@ -191,7 +192,9 @@ class SiswaResource extends Resource
                     ->url(function($record) {
                         return url('/admin/kartu-spp/'.$record->id);
                     })
-                    ->openUrlInNewTab()
+                    ->openUrlInNewTab(),
+                \Filament\Tables\Actions\RestoreAction::make(), // Untuk mengembalikan data
+                \Filament\Tables\Actions\ForceDeleteAction::make(),
             ])
             ->headerActions([
                 \Filament\Tables\Actions\ImportAction::make()
@@ -207,6 +210,14 @@ class SiswaResource extends Resource
                     \App\Filament\Actions\Siswas\PesanTagihanAction::make()
                     ->visible(fn() => auth()->user()->role === 'admin' || auth()->user()->role === 'editor'),
                 ]),
+            ]);
+    }
+    // Menimpa metode getEloquentQuery untuk mengizinkan pengambilan data yang di-soft delete
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                \Illuminate\Database\Eloquent\SoftDeletesScope::class,
             ]);
     }
 
