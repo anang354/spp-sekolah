@@ -103,7 +103,7 @@ class GenerateAlumniBulkAction
                             ]);
                         DB::commit();
                         }
-                        $dataSiswa = \App\Models\Siswa::where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas', 'alamatSambung'])->first()->toArray();
+                        $dataSiswa = \App\Models\Siswa::withTrashed()->where('id',$siswa->id)->with(['tagihans', 'pembayaran', 'kelas', 'alamatSambung'])->first()->toArray();
                         $path = public_path().'/images/logo-sma.jpg';
                         $type = pathinfo($path, PATHINFO_EXTENSION);
                         $data = file_get_contents($path);

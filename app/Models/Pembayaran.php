@@ -50,7 +50,7 @@ class Pembayaran extends Model
     }
     public function siswa(): BelongsTo
     {
-        return $this->belongsTo(Siswa::class);
+        return $this->belongsTo(Siswa::class)->withTrashed();
     }
 
     public function user(): BelongsTo
