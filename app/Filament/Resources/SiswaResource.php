@@ -162,6 +162,7 @@ class SiswaResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                TernaryFilter::make('is_active')->label('Siswa Aktif')->default(true),
                 SelectFilter::make('jenis_kelamin')->options([
                     'laki-laki' => 'Laki-laki',
                     'perempuan' => 'Perempuan'
