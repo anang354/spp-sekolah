@@ -13,7 +13,7 @@ class Diskon extends Model
 
     public function siswa(): BelongsToMany
     {
-        return $this->belongsToMany(Siswa::class, 'diskon_siswa')->withTimestamps();
+        return $this->belongsToMany(Siswa::class, 'diskon_siswa')->withTimestamps()->withTrashed();
     }
     public function biaya(): BelongsTo
     {

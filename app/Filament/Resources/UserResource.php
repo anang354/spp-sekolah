@@ -50,7 +50,7 @@ class UserResource extends Resource
                 IconColumn::make('is_active')->label('active')->boolean(),
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -59,11 +59,21 @@ class UserResource extends Resource
                     ->icon('heroicon-o-chat-bubble-bottom-center-text')
                     ->color('warning'),
                 Tables\Actions\DeleteAction::make(),
+                \Filament\Tables\Actions\RestoreAction::make(), // Untuk mengembalikan data
+                \Filament\Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+    // Menimpa metode getEloquentQuery untuk mengizinkan pengambilan data yang di-soft delete
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                \Illuminate\Database\Eloquent\SoftDeletesScope::class,
             ]);
     }
 
