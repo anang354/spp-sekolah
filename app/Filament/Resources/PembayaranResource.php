@@ -144,7 +144,13 @@ class PembayaranResource extends Resource
                                     $set('terbilang', \App\Helpers\Terbilang::make((int) $state));
                                 })
                             ->required()
-                            ->disabledOn('edit')
+                            ->disabled(function (string $operation) {
+                                if ($operation === 'edit') {
+                                    // Jika user punya role 'editor' atau BUKAN 'admin', maka disabled
+                                    return auth()->user()->isEditor();
+                                }
+                                return false;
+                            })
                             ->columnSpan([
                                 'sm' => 2,
                                 'xl' => 2,
