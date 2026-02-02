@@ -65,6 +65,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(PembayaranAlumni::class);
     }
+    public function kasTransaksi(): HasMany
+    {
+        return $this->hasMany(KasTransaksi::class);
+    }
+
+    public function kasLaporan(): HasMany
+    {
+        return $this->hasMany(KasLaporan::class);
+    }
 
     /**
      * The attributes that are mass assignable.
