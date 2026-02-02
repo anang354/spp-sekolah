@@ -12,42 +12,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class TagihanBelumDibayarWidget extends BaseWidget
 {
-    // protected function getStats(): array
-    // {
-    //     $now = Carbon::now();
-    //     $bulan = $now->month;
-    //     $tahun = $now->year;
-    //     $tagihan  = Tagihan::query()
-    //         ->where(function ($query) use ($bulan, $tahun) {
-    //             $query->where('periode_tahun', '<', $tahun)
-    //                   ->orWhere(function ($q) use ($bulan, $tahun) {
-    //                       $q->where('periode_tahun', $tahun)
-    //                         ->where('periode_bulan', '<=', $bulan);
-    //                   });
-    //         })
-    //         ->with('pembayaran')
-    //         ->get();
-    //     $totalTagihan = $tagihan->sum('jumlah_netto');
-    //     $totalDibayar = $tagihan->flatMap->pembayaran->sum('jumlah_dibayar');
-    //     $sisa = $totalTagihan - $totalDibayar;
-
-        
-    //     $getDataSiswa  =  Siswa::whereHas('tagihans', function ($query) {
-    //                         $query->where('status', '!=', 'lunas');
-    //                     })->count();
-    //     return [
-    //         Stat::make("Total Tagihan s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($totalTagihan, 0, ',', '.'))
-    //         ->description('Total jumlah tagihan semua siswa')
-    //         ->color('info'),
-    //         Stat::make("Total Dibayar s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($totalDibayar, 0, ',', '.'))
-    //         ->description('Total pembayaran yang masuk')
-    //             ->color('success'),
-    //         Stat::make("Sisa Tagihan s.d. {$now->translatedFormat('F Y')}", 'Rp ' . number_format($sisa, 0, ',', '.'))
-    //         ->description('Tagihan yang belum dibayar')
-    //             ->color('danger'),
-    //     ];
-    // }
-
+    
     protected function getStats(): array 
     {
         $now = Carbon::now();
@@ -57,14 +22,14 @@ class TagihanBelumDibayarWidget extends BaseWidget
         // 🔹 Total Pembayaran Bulan Ini untuk Sekolah
         $totalSekolah = DB::table('pembayarans')
             ->join('tagihans', 'pembayarans.tagihan_id', '=', 'tagihans.id')
-            ->whereBetween('pembayarans.created_at', [$startOfMonth, $endOfMonth])
+            ->whereBetween('pembayarans.tanggal_pembayaran', [$startOfMonth, $endOfMonth])
             ->where('tagihans.jenis_keuangan', 'sekolah')
             ->sum('pembayarans.jumlah_dibayar');
 
         // 🔸 Total Pembayaran Bulan Ini untuk Pondok
         $totalPondok = DB::table('pembayarans')
             ->join('tagihans', 'pembayarans.tagihan_id', '=', 'tagihans.id')
-            ->whereBetween('pembayarans.created_at', [$startOfMonth, $endOfMonth])
+            ->whereBetween('pembayarans.tanggal_pembayaran', [$startOfMonth, $endOfMonth])
             ->where('tagihans.jenis_keuangan', 'pondok')
             ->sum('pembayarans.jumlah_dibayar');
 
