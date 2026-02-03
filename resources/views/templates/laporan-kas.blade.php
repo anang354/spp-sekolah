@@ -3,9 +3,9 @@
 <head>
     <title>Laporan Buku Kas</title>
     <style>
-        body { font-family: sans-serif; font-size: 10pt; }
+        body { font-family: sans-serif; font-size: 9pt; }
         .header { text-align: center; margin-bottom: 20px; }
-        .section-title { font-weight: bold; margin-top: 20px; margin-bottom: 5px; font-size: 12pt; text-decoration: underline; }
+        .section-title { font-weight: bold; margin-top: 20px; margin-bottom: 5px; font-size: 11pt; text-decoration: underline; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
         th, td { border: 1px solid #333; padding: 5px; text-align: left; }
         th { background-color: #f2f2f2; }
@@ -110,8 +110,8 @@
             </tr>
             @endforeach
             <tr class="total-row">
-                <td colspan="5" class="text-right">Total Akhir</td>
-                <td class="text-right">{{ number_format($laporan->total_saldo, 0, ',', '.') }}</td> <td></td>
+                <td colspan="5" class="text-right">Total Saldo Akhir</td>
+                <td class="text-right">{{ number_format($laporan->total_saldo, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>

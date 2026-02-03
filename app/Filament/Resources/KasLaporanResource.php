@@ -95,6 +95,13 @@ class KasLaporanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('download')
+                    ->label('Unduh PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(fn (KasLaporan $record) => $record->nama_file ? asset('storage/' . $record->nama_file) : null)
+                    ->openUrlInNewTab()
+                    ->disabled(fn (KasLaporan $record) => !$record->nama_file)
+                    ->color('success'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
