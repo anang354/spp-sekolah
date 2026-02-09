@@ -124,7 +124,7 @@ class MultiplePembayaran extends Page implements HasForms
 
                         TextInput::make('jumlah_dibayar')
                             ->numeric()
-                            ->live(debounce: 500)
+                            ->live(onBlur: true)
                             ->hint(fn ($state) => 'Terbilang : ' . \App\Helpers\Terbilang::make((int) $state))
                             ->hintColor('gray')
                             ->required(),
@@ -138,7 +138,7 @@ class MultiplePembayaran extends Page implements HasForms
                     ->prefix('Rp. ')
                     ->numeric()
                     ->default(0)
-                    ->live(onBlur: true)
+                    ->live()
                     ->hint(fn ($get) => \App\Helpers\Terbilang::make((int) $get('total_semua_dibayar')))
                     ->hintColor('warning'),
                 FileUpload::make('bukti_bayar')
