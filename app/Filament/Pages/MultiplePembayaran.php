@@ -122,7 +122,7 @@ class MultiplePembayaran extends Page implements HasForms
 
                         TextInput::make('jumlah_dibayar')
                             ->numeric()
-                            ->live(debounce: 500)
+                            ->live()
                             ->hint(fn ($state) => 'Terbilang : ' . \App\Helpers\Terbilang::make((int) $state))
                             ->hintColor('gray')
                             ->required(),

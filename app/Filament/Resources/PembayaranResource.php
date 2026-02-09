@@ -20,12 +20,12 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PembayaranResource\Pages;
 use App\Filament\Actions\Pembayarans\DownloadPembayaranAction;
 use App\Filament\Resources\PembayaranResource\RelationManagers;
+// use Filament\Forms\Components\Placeholder;
 
 class PembayaranResource extends Resource
 {
@@ -139,10 +139,12 @@ class PembayaranResource extends Resource
                        TextInput::make('jumlah_dibayar')
                             ->numeric()
                             ->label('Jumlah Dibayar (Rp)')
-                            ->live(debounce: 1000) // agar update terbilang secara live
-                                ->afterStateUpdated(function (callable $set, $state) {
-                                    $set('terbilang', \App\Helpers\Terbilang::make((int) $state));
-                                })
+                            ->live() // agar update terbilang secara live
+                            ->hintColor('primary')
+                            ->hint(fn ($state) => $state ? \App\Helpers\Terbilang::make($state) : null)
+                            // ->afterStateUpdated(function (callable $set, $state) {
+                            //     $set('terbilang', \App\Helpers\Terbilang::make((int) $state));
+                            // })
                             ->required()
                             ->disabled(function (string $operation) {
                                 if ($operation === 'edit') {
@@ -156,24 +158,29 @@ class PembayaranResource extends Resource
                                 'xl' => 2,
                                 '2xl' => 4,
                             ]),
-                        Placeholder::make('terbilang')
-                            ->label('Terbilang')
-                            ->content(fn ($get) => $get('terbilang'))
-                            ->columnSpan([
-                                'sm' => 2,
-                                'xl' => 2,
-                                '2xl' => 4,
-                            ]),
+                        // Placeholder::make('terbilang')
+                        //     ->label('Terbilang')
+                        //     ->content(fn ($get) => $get('terbilang'))
+                        //     ->columnSpan([
+                        //         'sm' => 2,
+                        //         'xl' => 2,
+                        //         '2xl' => 4,
+                        //     ]),
                         // ...
-                ]),
-                FileUpload::make('bukti_bayar')
+                        FileUpload::make('bukti_bayar')
                         ->disk('local')
                         ->directory('bukti-bayar')
                         ->downloadable() // <<< Penting: Mengizinkan file didownload dari Filament
                         ->previewable() // <<< Opsional: Memungkinkan pratinjau gambar atau PDF (jika didukung browser)
-                        ->visibility('private'),
+                        ->visibility('private')
+                        ->columnSpan([
+                                'sm' => 2,
+                                'xl' => 2,
+                                '2xl' => 4,
+                            ]),
+                ]),
                 \Filament\Forms\Components\Toggle::make('is_whatsapp_sent')
-                    ->label('Apakah mengirim notifikasi WhatsApp?')
+                    ->label('Kirim Notifikasi Whatsapp')
                     ->default(true)
                     ->dehydrated(false),
 
