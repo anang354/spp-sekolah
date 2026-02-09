@@ -138,7 +138,7 @@ class MultiplePembayaran extends Page implements HasForms
                     ->prefix('Rp. ')
                     ->numeric()
                     ->default(0)
-                    ->live()
+                    ->live(onBlur: true)
                     ->hint(fn ($get) => \App\Helpers\Terbilang::make((int) $get('total_semua_dibayar')))
                     ->hintColor('warning'),
                 FileUpload::make('bukti_bayar')

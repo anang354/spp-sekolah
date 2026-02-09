@@ -48,7 +48,7 @@ class PembayaranResource extends Resource
                         ->label('Pilih Siswa')
                         ->options(\App\Models\Siswa::all()->pluck('nama', 'id'))
                         ->preload()
-                        ->live()
+                        ->live(onBlur: true)
                         ->required()
                         ->disabledOn('edit')
                         ->afterStateUpdated(fn (Forms\Set $set) => $set('tagihan_id', null))
