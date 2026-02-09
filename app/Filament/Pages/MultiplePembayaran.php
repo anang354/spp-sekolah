@@ -90,7 +90,9 @@ class MultiplePembayaran extends Page implements HasForms
                 Repeater::make('Tagihan')
                     ->addActionLabel('Tambah Tagihan yang akan dibayar')
                     ->afterStateUpdated(function ($state, callable $set) {
-                        $total = collect($state)->pluck('jumlah_dibayar')->sum();
+                        $total = collect($state)
+                        ->map(fn ($item) => (int) ($item['jumlah_dibayar'] ?? 0))
+                        ->sum();
                         $set('total_semua_dibayar', $total);
                     })
                     ->label('Daftar Tagihan')
@@ -122,7 +124,7 @@ class MultiplePembayaran extends Page implements HasForms
 
                         TextInput::make('jumlah_dibayar')
                             ->numeric()
-                            ->live()
+                            ->live(debounce: 500)
                             ->hint(fn ($state) => 'Terbilang : ' . \App\Helpers\Terbilang::make((int) $state))
                             ->hintColor('gray')
                             ->required(),

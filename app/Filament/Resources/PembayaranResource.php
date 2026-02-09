@@ -139,7 +139,7 @@ class PembayaranResource extends Resource
                        TextInput::make('jumlah_dibayar')
                             ->numeric()
                             ->label('Jumlah Dibayar (Rp)')
-                            ->live() // agar update terbilang secara live
+                            ->live(debounce: 500) // agar update terbilang secara live
                             ->hintColor('primary')
                             ->hint(fn ($state) => $state ? \App\Helpers\Terbilang::make($state) : null)
                             // ->afterStateUpdated(function (callable $set, $state) {
