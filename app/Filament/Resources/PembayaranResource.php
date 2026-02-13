@@ -137,21 +137,24 @@ class PembayaranResource extends Resource
                             ->hintColor('primary')
                             ->hint(fn ($state) => $state ? \App\Helpers\Terbilang::make($state) : null)
                             ->rules([
-                                fn ($get): Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                    $tagihanId = $get('tagihan_id');
-                                    if (!$tagihanId) return;
+                                fn ($get, $record): Closure => function (string $attribute, $value, Closure $fail) use ($get, $record) {
+                                $tagihanId = $get('tagihan_id');
+                                if (!$tagihanId) return;
 
-                                    $tagihan = \App\Models\Tagihan::find($tagihanId);
-                                    if (!$tagihan) return;
+                                $tagihan = \App\Models\Tagihan::find($tagihanId);
+                                if (!$tagihan) return;
 
-                                    // Hitung sisa tagihan asli (tagihan_netto dikurangi pembayaran yang sudah masuk sebelumnya)
-                                    $totalTerbayar = \App\Models\Pembayaran::where('tagihan_id', $tagihanId)->sum('jumlah_dibayar');
-                                    $sisaTagihan = $tagihan->jumlah_netto - $totalTerbayar;
+                                // Hitung total bayar dari transaksi LAIN (kecuali transaksi yang sedang diedit ini)
+                                $totalTerbayarLainnya = \App\Models\Pembayaran::where('tagihan_id', $tagihanId)
+                                    ->where('id', '!=', $record?->id) // Mengecualikan record saat ini
+                                    ->sum('jumlah_dibayar');
 
-                                    if ($value > $sisaTagihan) {
-                                        $fail("Nominal melebihi sisa tagihan. Maksimal pembayaran adalah Rp. " . number_format($sisaTagihan, 0, ',', '.'));
-                                    }
-                                },
+                                $sisaTagihanAsli = $tagihan->jumlah_netto - $totalTerbayarLainnya;
+
+                                if ($value > $sisaTagihanAsli) {
+                                    $fail("Nominal melebihi sisa tagihan. Maksimal yang bisa diinput adalah Rp. " . number_format($sisaTagihanAsli, 0, ',', '.'));
+                                }
+                            },
                             ])
                             ->required()
                             ->disabled(function (string $operation) {
