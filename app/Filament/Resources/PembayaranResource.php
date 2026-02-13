@@ -2,29 +2,30 @@
 
 namespace App\Filament\Resources;
 
-use Carbon\Carbon;
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Form;
+use App\Filament\Actions\Pembayarans\DownloadPembayaranAction;
+use App\Filament\Resources\PembayaranResource\Pages;
+use App\Filament\Resources\PembayaranResource\RelationManagers;
 use App\Models\Pembayaran;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Illuminate\Support\Facades\DB;
-use Filament\Tables\Filters\Filter;
-use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
+use Carbon\Carbon;
+use Closure;
+use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\PembayaranResource\Pages;
-use App\Filament\Actions\Pembayarans\DownloadPembayaranAction;
-use App\Filament\Resources\PembayaranResource\RelationManagers;
+use Illuminate\Support\Facades\DB;
 // use Filament\Forms\Components\Placeholder;
 
 class PembayaranResource extends Resource
@@ -81,8 +82,16 @@ class PembayaranResource extends Resource
                             $bulan = \Carbon\Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F');
                             // Catatan: sisa_tagihan mungkin perlu dicek aksesornnya di model Tagihan
                             $sisa = number_format($tagihan->sisa_tagihan, 0, ",", ".");
-                            
+
                             return "{$tagihan->daftar_biaya} {$bulan} {$tagihan->periode_tahun} - Rp.{$sisa}";
+                        })
+                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                            if ($state) {
+                                $tagihan = \App\Models\Tagihan::find($state);
+                                if ($tagihan) {
+                                    $set('jumlah_dibayar', $tagihan->sisa_tagihan);
+                                }
+                            }
                         })
                         ->reactive()
                         ->searchable()
@@ -110,7 +119,7 @@ class PembayaranResource extends Resource
                             ])
                             ->columnSpan([
                                 'sm' => 2,
-                                'xl' => 2,
+                                'xl' => 1,
                                 '2xl' => 1,
                             ]),
                         DatePicker::make('tanggal_pembayaran')
@@ -119,13 +128,43 @@ class PembayaranResource extends Resource
                             ->columnSpan([
                                 'sm' => 2,
                                 'xl' => 2,
-                                '2xl' => 3,
+                                '2xl' => 2,
                             ]),
-                        TextInput::make('keterangan')
-                        ->columnSpan([
+                        TextInput::make('jumlah_dibayar')
+                            ->numeric()
+                            ->label('Jumlah Dibayar (Rp)')
+                            ->live(debounce: 500) // agar update terbilang secara live
+                            ->hintColor('primary')
+                            ->hint(fn ($state) => $state ? \App\Helpers\Terbilang::make($state) : null)
+                            ->rules([
+                                fn ($get): Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                    $tagihanId = $get('tagihan_id');
+                                    if (!$tagihanId) return;
+
+                                    $tagihan = \App\Models\Tagihan::find($tagihanId);
+                                    if (!$tagihan) return;
+
+                                    // Hitung sisa tagihan asli (tagihan_netto dikurangi pembayaran yang sudah masuk sebelumnya)
+                                    $totalTerbayar = \App\Models\Pembayaran::where('tagihan_id', $tagihanId)->sum('jumlah_dibayar');
+                                    $sisaTagihan = $tagihan->jumlah_netto - $totalTerbayar;
+
+                                    if ($value > $sisaTagihan) {
+                                        $fail("Nominal melebihi sisa tagihan. Maksimal pembayaran adalah Rp. " . number_format($sisaTagihan, 0, ',', '.'));
+                                    }
+                                },
+                            ])
+                            ->required()
+                            ->disabled(function (string $operation) {
+                                if ($operation === 'edit') {
+                                    // Jika user punya role 'editor' atau BUKAN 'admin', maka disabled
+                                    return auth()->user()->isEditor();
+                                }
+                                return false;
+                            })
+                            ->columnSpan([
                                 'sm' => 'full',
-                                'xl' => 2,
-                                '2xl' => 3,
+                                'xl' => 3,
+                                '2xl' => 4,
                             ]),
                 ]),
 
@@ -136,28 +175,13 @@ class PembayaranResource extends Resource
                         '2xl' => 8,
                     ])
                     ->schema([
-                       TextInput::make('jumlah_dibayar')
-                            ->numeric()
-                            ->label('Jumlah Dibayar (Rp)')
-                            ->live(debounce: 500) // agar update terbilang secara live
-                            ->hintColor('primary')
-                            ->hint(fn ($state) => $state ? \App\Helpers\Terbilang::make($state) : null)
-                            // ->afterStateUpdated(function (callable $set, $state) {
-                            //     $set('terbilang', \App\Helpers\Terbilang::make((int) $state));
-                            // })
-                            ->required()
-                            ->disabled(function (string $operation) {
-                                if ($operation === 'edit') {
-                                    // Jika user punya role 'editor' atau BUKAN 'admin', maka disabled
-                                    return auth()->user()->isEditor();
-                                }
-                                return false;
-                            })
-                            ->columnSpan([
+                        TextInput::make('keterangan')
+                        ->columnSpan([
                                 'sm' => 2,
                                 'xl' => 2,
                                 '2xl' => 4,
                             ]),
+
                         // Placeholder::make('terbilang')
                         //     ->label('Terbilang')
                         //     ->content(fn ($get) => $get('terbilang'))

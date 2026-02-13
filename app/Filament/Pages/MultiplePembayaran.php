@@ -2,22 +2,25 @@
 
 namespace App\Filament\Pages;
 
+use \Filament\Forms\Components\Repeater;
 use App\Models\Pembayaran;
 use Carbon\Carbon;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
-use \Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Support\Facades\DB;
 
 class MultiplePembayaran extends Page implements HasForms
@@ -88,48 +91,64 @@ class MultiplePembayaran extends Page implements HasForms
                     ->afterStateUpdated(fn ($state, callable $set) => $set('Tagihan', [])),
 
                 Repeater::make('Tagihan')
-                    ->addActionLabel('Tambah Tagihan yang akan dibayar')
-                    ->afterStateUpdated(function ($state, callable $set) {
-                        $total = collect($state)
-                        ->map(fn ($item) => (int) ($item['jumlah_dibayar'] ?? 0))
-                        ->sum();
-                        $set('total_semua_dibayar', $total);
-                    })
                     ->label('Daftar Tagihan')
-                    ->default([])
+                    ->addActionLabel('Tambah Tagihan yang akan dibayar')
+                    ->reactive()
+                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateTotalSemua($set, $get)) // Update saat baris dihapus
                     ->schema([
                         Select::make('tagihan_id')
                             ->label('Tagihan')
+                            ->required()
                             ->reactive()
-                            ->options(function (callable $get, callable $set, $state) {
+                            ->distinct()
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->options(function (Get $get) {
                                 $siswaId = $get('../../siswa_id');
                                 if (!$siswaId) return [];
 
-                                // Ambil tagihan yang sudah dipilih di repeater, kecuali yang dipilih di select ini
-                                $selectedTagihanIds = collect($get('../../Tagihan'))->pluck('tagihan_id')->filter(function ($id) use ($state) {
-                                    return $id !== null && $id !== $state; // Exclude null dan yang dipilih di select ini
-                                })->toArray();
-
                                 return \App\Models\Tagihan::where('siswa_id', $siswaId)
-                                    ->whereColumn('jumlah_netto', '>', DB::raw('(SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.tagihan_id = tagihans.id)'))
-                                    ->whereNotIn('id', $selectedTagihanIds) // Exclude yang sudah dipilih di item lain
+                                    ->whereRaw('(jumlah_netto - (SELECT COALESCE(SUM(jumlah_dibayar), 0) FROM pembayarans WHERE pembayarans.tagihan_id = tagihans.id)) > 0')
                                     ->get()
                                     ->mapWithKeys(function ($tagihan) {
-                                        $bulan = Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F');
-                                        $label = "{$tagihan->daftar_biaya} - {$bulan} {$tagihan->periode_tahun} - Rp. " . number_format($tagihan->sisa_tagihan, 0, ",", ".");
-                                        return [$tagihan->id => $label];
+                                        $bulan = \Carbon\Carbon::createFromDate(null, $tagihan->periode_bulan, 1)->translatedFormat('F');
+                                        return [$tagihan->id => "{$tagihan->nama_tagihan} - {$bulan} {$tagihan->periode_tahun} - Rp. " . number_format($tagihan->sisa_tagihan, 0, ",", ".")];
                                     });
                             })
-                            ->required(),
+                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                if ($state) {
+                                    $tagihan = \App\Models\Tagihan::find($state);
+                                    if ($tagihan) {
+                                        $set('jumlah_dibayar', $tagihan->sisa_tagihan);
+                                    }
+                                }
+                                // Paksa update total semua setelah tagihan dipilih dan nominal otomatis terisi
+                                self::updateTotalSemua($set, $get);
+                            }),
 
                         TextInput::make('jumlah_dibayar')
                             ->numeric()
-                            ->live(onBlur: true)
-                            ->hint(fn ($state) => 'Terbilang : ' . \App\Helpers\Terbilang::make((int) $state))
-                            ->hintColor('gray')
-                            ->required(),
+                            ->required()
+                            ->hint(fn ($state) => $state ? \App\Helpers\Terbilang::make($state) : null)
+                            ->hintColor('primary')
+                            ->live(onBlur: true) // Mengirim state ke server saat kursor keluar dari box
+                            ->rules([
+                                fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                    $tagihanId = $get('tagihan_id');
+                                    if (!$tagihanId) return;
+
+                                    $tagihan = \App\Models\Tagihan::find($tagihanId);
+                                    if (!$tagihan) return;
+
+                                    $totalTerbayar = \App\Models\Pembayaran::where('tagihan_id', $tagihanId)->sum('jumlah_dibayar'); //
+                                    $sisaTagihan = $tagihan->jumlah_netto - $totalTerbayar; //
+
+                                    if ($value > $sisaTagihan) {
+                                        $fail("Nominal melebihi sisa tagihan. Maksimal adalah Rp. " . number_format($sisaTagihan, 0, ',', '.'));
+                                    }
+                                },
+                            ])
+                            ->afterStateUpdated(fn (Set $set, Get $get) => self::updateTotalSemua($set, $get)),
                     ])
-                    ->minItems(1)
                     ->columns(2),
                 TextInput::make('total_semua_dibayar')
                     ->label('Total Semua Dibayar')
@@ -148,6 +167,20 @@ class MultiplePembayaran extends Page implements HasForms
                     ->previewable() // <<< Opsional: Memungkinkan pratinjau gambar atau PDF (jika didukung browser)
                     ->visibility('private')
             ]);
+    }
+    public static function updateTotalSemua(Set $set, Get $get): void
+    {
+        // Mengambil state 'Tagihan' dari level yang tepat
+        // Jika dipanggil dari dalam repeater, gunakan ../../Tagihan
+        // Jika dipanggil dari level repeater, gunakan Tagihan
+        $repeaterState = $get('Tagihan') ?? $get('../../Tagihan') ?? [];
+
+        $total = collect($repeaterState)
+            ->map(fn ($item) => (int) ($item['jumlah_dibayar'] ?? 0))
+            ->sum();
+
+        // Set field total_semua_dibayar yang berada di luar repeater
+        $set('../../total_semua_dibayar', $total);
     }
     protected function getFormActions(): array
     {
@@ -176,13 +209,13 @@ class MultiplePembayaran extends Page implements HasForms
                 }),
         ];
     }
-    
+
     // 1. Fungsi Utama (Logika Bisnis) - Private agar tidak bisa dipanggil langsung oleh tombol
 private function processPayment()
 {
     $nomorBayar = Pembayaran::generateNomorBayar();
     $data = $this->form->getState(); // Validasi berjalan di sini
-    
+
     $getSiswa = \App\Models\Siswa::select('nama', 'nomor_hp')->findOrFail($data['siswa_id']);
     $siswaNama = $getSiswa->nama;
     $target = $getSiswa->nomor_hp;
@@ -190,7 +223,7 @@ private function processPayment()
 
     $templatePesan = "
 Nomor Bayar: {$nomorBayar} \n
-Assalamualaikum Bapak/Ibu, \n 
+Assalamualaikum Bapak/Ibu, \n
 Pembayaran atas nama {$siswaNama} telah kami terima pada tanggal {$tanggalPembayaran}. \n
 Rincian Pembayaran: \n";
 
@@ -203,7 +236,7 @@ Rincian Pembayaran: \n";
             $bulanNama = \App\Models\Tagihan::BULAN[$tagihan->periode_bulan] ?? '-'; // Handle jika key tidak ada
             $templatePesan .= "- {$tagihan->daftar_biaya} - {$bulanNama} {$tagihan->periode_tahun} : Rp. " . number_format($bayar['jumlah_dibayar'], 0, ",", ".") . "\n";
             $totalBayar += $bayar['jumlah_dibayar'];
-            
+
             Pembayaran::create([
                 'siswa_id' => $data['siswa_id'],
                 'user_id' => auth()->user()->id,
@@ -216,27 +249,32 @@ Rincian Pembayaran: \n";
                 'nomor_bayar' => $nomorBayar,
             ]);
         }
-        
+
         DB::commit(); // Simpan jika semua loop berhasil
 
+    }
+    catch (Halt $exception) {
+        \DB::rollBack();
+        return;
     } catch (\Exception $e) {
         DB::rollBack(); // Batalkan semua jika ada error
-        
+
         Notification::make()
-            ->title('Terjadi kesalahan: ' . $e->getMessage())
             ->danger()
+            ->title('Gagal')
+            ->body($e->getMessage())
             ->send();
-            
+
         // Throw error agar function pemanggil tahu kalau ini gagal
-        throw $e; 
+        throw $e;
     }
 
     // --- LOGIKA WHATSAPP ---
     $templatePesan .= "\n Total Pembayaran: Rp. " . number_format($totalBayar, 0, ",", ".") . "\n
 Terima kasih atas pembayaran Anda. Alhamdulillah Jazakumullahu Khoiro.";
-    
+
     $pengaturan = \App\Models\Pengaturan::select('token_whatsapp', 'whatsapp_active')->first();
-    
+
     if($pengaturan && $pengaturan->whatsapp_active) {
         // ... (Kode Curl Whatsapp Anda Tetap Sama Disini) ...
         // Saya persingkat untuk kejelasan jawaban
@@ -255,7 +293,7 @@ public function create()
     try {
         $this->processPayment();
         // Redirect setelah sukses
-        $this->redirect('/admin/pembayarans'); 
+        $this->redirect('/admin/pembayarans');
     } catch (\Exception $e) {
         // Error sudah dihandle di processPayment, biarkan form tetap terbuka
     }
@@ -266,15 +304,15 @@ public function createAnother()
 {
     try {
         $this->processPayment();
-        
+
         // Reset form agar kosong kembali
         $this->form->fill([
             'tanggal_pembayaran' => now(), // Set default value lagi jika perlu
             'metode_pembayaran' => null, // Atau default value
         ]);
-        
-        $this->redirect('/admin/multiple-pembayaran'); 
-        
+
+        $this->redirect('/admin/multiple-pembayaran');
+
     } catch (\Exception $e) {
         // Error handling
     }
