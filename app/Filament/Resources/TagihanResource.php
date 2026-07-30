@@ -234,10 +234,18 @@ class TagihanResource extends Resource
             // <<< AKHIR FILTER TAHUN >>>
         ])
         ->headerActions([
-            \App\Filament\Actions\Tagihans\CreateAction::make()
-                ->visible(function () {
-                    return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
-                }),
+            // \App\Filament\Actions\Tagihans\CreateAction::make()
+            //     ->visible(function () {
+            //         return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
+            //     }),
+            // \App\Filament\Actions\Tagihans\CreateTagihanAction::make()
+            //     ->visible(function () {
+            //         return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
+            //     }),
+            \App\Filament\Actions\Tagihans\CreateTagihanMultiple::make()
+            ->visible(function () {
+                return auth()->user()->role === 'admin' || auth()->user()->role === 'editor';
+            }),
         ])
         ->actions([
             //

@@ -3,68 +3,92 @@
 
 namespace App\Filament\Actions\Tagihans;
 
-use Carbon\Carbon;
 use App\Models\Biaya;
 use App\Models\Siswa;
 use App\Models\Tagihan;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Illuminate\Support\Facades\DB;
-use Filament\Tables\Actions\Action;
+use Carbon\Carbon;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
-use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\Placeholder;
+use Illuminate\Support\Facades\DB;
 
-class CreateAction
+class CreateTagihanAction
 {
     public static function make(): Action
     {
-        return Action::make('create')->label('Buat Tagihan Massal')->icon('heroicon-o-plus')
+        return Action::make('create-tagihan')->label('Buat Tagihan Khusus')->icon('heroicon-o-plus')->color('warning')
             ->form([
-                Placeholder::make('')->content('Tagihan akan dibuat Untuk jenjang siswa dan kelas yang dipilih, berdasarkan biaya dan diskon yang sudah ada di database '),
-                Radio::make('jenjang')->options([
-                    'smp' => 'SMP',
-                    'sma' => 'SMA',
-                ])->required()
-                ->live()
-                ->afterStateUpdated(fn (Set $set) => $set('kelas', null)),
-                Select::make('kelas')->options(function (Get $get): array {
-                    $jenjang = $get('jenjang');
-                       return \App\Models\Kelas::where('jenjang', $jenjang)->pluck('nama_kelas', 'id')->toArray();
-                })->required()
-                ->multiple(),
-                Select::make('periode_bulan')->options([
-                    Tagihan::BULAN
-                ])->required(),
-                Select::make('periode_tahun')->options([
-                    Tagihan::TAHUN
-                ])->required(),
-                // DatePicker::make('jatuh_tempo')->label('Tanggal Jatuh Tempo')->required()
+                Grid::make([
+                    'md' => 1,
+                    'lg' => 2,
+                ])
+                    ->schema([
+                        Placeholder::make('')->content('Tagihan akan dibuat berdasarkan jenjang, kelas, dan biaya yang dipilih')->columnSpan('full'),
+                        Radio::make('jenjang')->options([
+                            'smp' => 'SMP',
+                            'sma' => 'SMA',
+                        ])->required()
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set) => $set('kelas', null)),
+                        Select::make('kelas')->options(function (Get $get): array {
+                            $jenjang = $get('jenjang');
+                            return \App\Models\Kelas::where('jenjang', $jenjang)->pluck('nama_kelas', 'id')->toArray();
+                        })->required()
+                        ->multiple(),
+                        Select::make('periode_bulan')->options([
+                            Tagihan::BULAN
+                        ])->required(),
+                        Select::make('periode_tahun')->options([
+                            Tagihan::TAHUN
+                        ])->required(),
+                        Select::make('biaya_id')
+                        ->label('Biaya')
+                        ->options(function (Get $get): array {
+                            $jenjang = $get('jenjang');
+                            $biaya = Biaya::where('jenjang', $jenjang)->pluck('nama_biaya', 'id')->toArray();
+                            return $biaya;
+                        })->required(),
+                    ])
             ])
             ->action(function (array $data){
                 $jenjang = $data['jenjang'];
                 $kelasIds = $data['kelas'];
-                $getSiswa = Siswa::where('is_active', true)
-                ->whereHas('kelas', function (Builder $query) use ($jenjang, $kelasIds) {
-                    $query->where('jenjang', $jenjang)->whereIn('id', $kelasIds);
-                })->get();
+                $biaya = Biaya::find($data['biaya_id']);
+                if($biaya->jenis_siswa === 'semua') {
+                    $getSiswa = Siswa::where('is_active', true)
+                    ->whereHas('kelas', function (Builder $query) use ($jenjang, $kelasIds) {
+                        $query->where('jenjang', $jenjang)->whereIn('id', $kelasIds);
+                    })->get();
+                } else if($biaya->jenis_siswa === 'boarding') {
+                    $getSiswa = Siswa::where('is_active', true)
+                    ->where('is_boarding', true)
+                    ->whereHas('kelas', function (Builder $query) use ($jenjang, $kelasIds) {
+                        $query->where('jenjang', $jenjang)->whereIn('id', $kelasIds);
+                    })->get();
+                } else if($biaya->jenis_siswa === 'non-boarding') {
+                    $getSiswa = Siswa::where('is_active', true)
+                    ->where('is_boarding', false)
+                    ->whereHas('kelas', function (Builder $query) use ($jenjang, $kelasIds) {
+                        $query->where('jenjang', $jenjang)->whereIn('id', $kelasIds);
+                    })->get();
+                }
                 DB::beginTransaction();
                 try {
                     $hitung = 0;
                     foreach($getSiswa as $siswa) {
                         $check = \App\Models\Tagihan::where('siswa_id', $siswa->id)
+                        ->where('daftar_biaya', $biaya->nama_biaya)
                         ->where('periode_bulan', $data['periode_bulan'])
                         ->where('periode_tahun', $data['periode_tahun'])->count();
                         if($check === 0)
                         {
-                            $isBoarding = $siswa->is_boarding ? 'boarding' : 'non-boarding';
-                            $biaya = Biaya::where('jenjang', $jenjang)
-                                    ->whereIn('jenis_siswa', [$isBoarding, 'semua'])
-                                    ->get();
-                            foreach($biaya as $biaya) {
                                 $totalBiaya = $biaya->nominal;
                                 $totalDiskon = 0;
                                 $idsDiskon = [];
@@ -80,7 +104,6 @@ class CreateAction
                                         $idsDiskon[] = (string)$diskon->nama_diskon;
                                     }
                                 }
-
                                 $saveIdsDiskon = implode(', ', $idsDiskon);
                                 $jumlahNetto = $totalBiaya - $totalDiskon;
                                 $tanggal = Carbon::createFromDate($data['periode_tahun'], $data['periode_bulan'], 1)->endOfMonth()->toDateString();
@@ -99,7 +122,7 @@ class CreateAction
                                     'status' => 'baru',
                                 ]);
                                 $hitung++;
-                            }
+
                         }
                     }
                     DB::commit();
